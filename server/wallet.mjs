@@ -11,11 +11,12 @@ const r8 = (x) => Math.round(x * 1e8) / 1e8;
  * What `address` holds of the quiver: current members and tokens that left it (`alumni`), each valued at what
  * selling it on its curve returns right now. `ethUsd` only adds dollar figures.
  */
-export async function holdings(address, members, alumni, ethUsd) {
+export async function holdings(address, members, alumni, ethUsd, own = null) {
   const who = ethers.getAddress(address);
   const seen = new Set(), list = [];
   for (const m of members) { seen.add(m.token); list.push({ token: m.token, symbol: m.symbol, curve: m.curve, member: true, weight: m.weight }); }
   for (const a of alumni) if (!seen.has(a.token)) { seen.add(a.token); list.push({ token: a.token, symbol: a.symbol, curve: a.curve, member: false, weight: 0, why: a.why }); }
+  if (own && !seen.has(own.token)) list.push({ token: own.token, symbol: own.symbol, curve: own.curve, member: false, own: true, weight: 0 });   // Chiron's own token
   const bal = list.length ? await multicall(list.map((t) => [t.token, erc20I, "balanceOf", [who]])) : [];
   const wei = await steady(() => provider.getBalance(who));
   const free = wei > GAS_RESERVE ? wei - GAS_RESERVE : 0n;
@@ -28,12 +29,12 @@ export async function holdings(address, members, alumni, ethUsd) {
     if (!c || c.graduated) { out.unpriced.push({ token: t.token, symbol: t.symbol, amount, why: c?.graduated ? "it graduated to Uniswap, so it is not priced or sold here" : "its curve could not be read" }); continue; }
     const eth = num(curveSellQuote(c, t.raw));
     if (eth < 1e-7) continue;                                   // dust
-    out.held.push({ token: t.token, symbol: t.symbol, curve: t.curve, member: t.member, weight: t.weight, why: t.why || null, raw: t.raw.toString(), amount, eth: r8(eth), usd: usd(eth) });
+    out.held.push({ token: t.token, symbol: t.symbol, curve: t.curve, member: t.member, own: !!t.own, weight: t.weight, why: t.why || null, raw: t.raw.toString(), amount, eth: r8(eth), usd: usd(eth) });
   }
   out.held.sort((a, b) => b.eth - a.eth);
   out.totalEth = r8(out.held.reduce((s, x) => s + x.eth, 0));
   out.totalUsd = usd(out.totalEth);
-  out.left = out.held.filter((h) => !h.member).length;
+  out.left = out.held.filter((h) => !h.member && !h.own).length;
   return out;
 }
 

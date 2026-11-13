@@ -6,7 +6,7 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { ethers } from "ethers";
-import { ethPrice, lc, CHAIN_ID, EXPLORER } from "./chain.mjs";
+import { ethPrice, lc, multicall, curves, factoryI, PONS_FACTORY, CHAIN_ID, EXPLORER } from "./chain.mjs";
 import * as memes from "./memes.mjs";
 import * as record from "./record.mjs";
 import { RULES, verdict, draw, plan } from "./quiver.mjs";
@@ -32,10 +32,33 @@ for (const sig of ["SIGINT", "SIGTERM"]) process.on(sig, () => { try { dirty = t
 const errors = {};
 const note = (k, e) => { errors[k] = e ? { at: Date.now(), msg: String(e.message || e).slice(0, 200) } : null; if (e) console.error(`[${k}]`, e.message || e); };
 
+// ---------- Chiron's own token (its CA is set in /studio) ----------
+// A share of every buy goes into it, as a step of its own, while it is still on its Pons curve.
+const OWN_SHARE = Math.min(0.25, Math.max(0, Number(process.env.CHIRON_SHARE ?? 0.1) || 0));
+let ownCache = { at: 0, v: null };
+async function ownToken() {
+  if (Date.now() - ownCache.at < 5 * 60_000) return ownCache.v;
+  let v = null;
+  try {
+    const cfg = T.tokenConfig();
+    if (cfg.ca && OWN_SHARE > 0) {
+      const rec = (await multicall([[PONS_FACTORY, factoryI, "getLaunchedToken", [cfg.ca]]]))[0]?.[0];
+      if (rec && rec.exists && rec.pairToken === ethers.ZeroAddress) {
+        const curve = lc(rec.curve), live = (await curves([curve]))[curve];
+        v = { token: lc(cfg.ca), symbol: cfg.symbol, curve, share: OWN_SHARE, tradable: !!live && !live.graduated };
+      }
+    }
+    note("own");
+  } catch (e) { note("own", e); return ownCache.v; }
+  ownCache = { at: Date.now(), v };
+  return v;
+}
+
 // ---------- loops ----------
 let eth = S.eth || null, polledAt = 0;
 async function minute() {
   try { await memes.poll(); polledAt = Date.now(); note("pons"); } catch (e) { note("pons", e); }
+  ownToken();
   try { eth = await ethPrice(); S.eth = eth; S.ethAt = Date.now(); note("price"); dirty = true; } catch (e) { note("price", e); }
 }
 
@@ -68,6 +91,7 @@ async function books() {
 }
 
 (async () => {
+  ownToken();                                               // its own token is looked up at once, not after the first long read of Pons
   await minute();
   setInterval(minute, 60_000);
   await redraw(); setInterval(redraw, DRAW_EVERY);
@@ -99,7 +123,7 @@ const walletCache = new Map();
 async function wallet(addr, fresh = false) {
   const c = walletCache.get(addr);
   if (c && !fresh && Date.now() - c.at < 15_000) return c.v;
-  const v = await W.holdings(addr, S.quiver.members, S.alumni, eth?.mid);
+  const v = await W.holdings(addr, S.quiver.members, S.alumni, eth?.mid, await ownToken());
   walletCache.set(addr, { at: Date.now(), v }); if (walletCache.size > 2000) walletCache.clear();
   return v;
 }
@@ -119,6 +143,7 @@ function publicState() {
   const q = S.quiver;
   return {
     now: Date.now(), chainId: CHAIN_ID, explorer: EXPLORER, ethUsd: eth?.mid || null, rules: RULES, art: chapterArt(),
+    own: ownCache.v && { token: ownCache.v.token, symbol: ownCache.v.symbol, share: ownCache.v.share, tradable: ownCache.v.tradable },
     quiver: {
       at: q.at, next: q.at ? q.at + DRAW_EVERY : null, size: RULES.size,
       members: q.members.map((m) => { const s = memes.series(m.token, 48); return { token: m.token, symbol: m.symbol, weight: m.weight, volEth: +m.volEth.toFixed(3), risk: m.risk, cost: m.cost ?? null, since: m.since, change: s.change, spark: s.pts.map((p) => p[1]) }; }),
@@ -142,7 +167,7 @@ async function studio(req, res, p) {
   const a = studioOk(req); if (a !== "ok") return send(res, a === "locked" ? 429 : 401, { error: a === "locked" ? "Too many wrong keys. Wait 10 minutes." : "Wrong studio key." });
   const k = `${req.method} ${p.slice("/api/studio".length)}`;
   if (k === "GET /status") return send(res, 200, await T.status());
-  if (k === "POST /token") return send(res, 200, await T.saveToken(await body(req)));
+  if (k === "POST /token") { const r = await T.saveToken(await body(req)); ownCache.at = 0; await ownToken(); return send(res, 200, r); }
   if (k === "POST /wallet") return send(res, 200, T.saveKey((await body(req)).privateKey || ""));
   if (k === "DELETE /wallet") return send(res, 200, T.removeKey());
   if (k === "POST /buyback") return send(res, 200, await T.buyback((await body(req)).usd));
@@ -197,7 +222,8 @@ async function api(req, res, p) {
       if (!(amount > 0)) return send(res, 400, { error: "Enter how much ETH to spend." });
       if (amount > h.eth.free) return send(res, 400, { error: `This wallet has ${h.eth.free} ETH free to spend (a little is kept aside for gas).` });
     }
-    const pl = plan({ action, eth: amount, members: S.quiver.members, held: h.held });
+    const mine = await ownToken();
+    const pl = plan({ action, eth: amount, members: S.quiver.members, held: h.held, own: mine?.tradable ? mine : null });
     const steps = W.stepsFor(pl), id = steps.length ? crypto.randomBytes(8).toString("hex") : null;
     if (id) plans.set(id, { address: me, steps, at: Date.now(), action });
     for (const [k, v] of plans) if (Date.now() - v.at > 15 * 60_000) plans.delete(k);

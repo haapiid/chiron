@@ -298,3 +298,8 @@ select option{background:var(--bg2)}
   .pulse{animation:none}
 }
 body.app main>section{padding:0;border:0}
+.nav nav a,.ca,.ca span{white-space:nowrap}
+.nav nav{flex-shrink:0}
+@media (max-width:1180px){.nav .ca{display:none}}
+@media (max-width:900px){.nav .buy-own{display:none}}
+.cta .btn.buy-own{border-color:var(--line2)}

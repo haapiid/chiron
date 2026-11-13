@@ -19,12 +19,14 @@ const copy = (text) => navigator.clipboard?.writeText(text).then(() => toast("Co
 const pons = (token) => `https://ponsfamily.com/launchpad/${token}`;
 const COL = { quiver: "#e9c08e", still: "#a9c2ee", single: "#b9a7e8" };
 
-/** the $CHIRON contract address chip, once the owner has set it in the studio */
+/** the $CHIRON contract address chip and buy buttons, once the owner has set the CA in the studio */
 async function loadToken() {
   try {
     const t = await api("/api/token");
-    if (!t.ca || !$("ca")) return;
-    $("caText").textContent = `$${t.symbol} ${short(t.ca)}`; $("ca").title = "Copy " + t.ca; $("ca").hidden = false; $("ca").onclick = () => copy(t.ca);
+    if (!t.ca) return;
+    if ($("ca")) { $("caText").textContent = `$${t.symbol} ${short(t.ca)}`; $("ca").title = "Copy " + t.ca; $("ca").hidden = false; $("ca").onclick = () => copy(t.ca); }
+    // the buttons that buy Chiron's own token on Pons
+    for (const a of document.querySelectorAll(".buy-own")) { a.href = t.buy; a.textContent = `Buy $${t.symbol}`; a.hidden = false; }
   } catch {}
 }
 

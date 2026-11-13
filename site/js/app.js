@@ -76,11 +76,11 @@ function renderWallet() {
   const maxW = Math.max(...h.held.map((x) => Math.max(x.weight, total ? x.eth / total : 0)), 0.0001);
   $("holds").innerHTML = h.held.length ? h.held.map((x) => {
     const mine = total ? x.eth / total : 0;
-    return `<div class="hold ${x.member ? "" : "gone"}"><a class="name" href="${pons(x.token)}" target="_blank" rel="noopener">$${esc(x.symbol)}</a>
+    return `<div class="hold ${x.member || x.own ? "" : "gone"}"><a class="name" href="${pons(x.token)}" target="_blank" rel="noopener">$${esc(x.symbol)}</a>
       <div class="bars"><i style="--w:${((mine / maxW) * 100).toFixed(1)}%"></i><i style="--w:${((x.weight / maxW) * 100).toFixed(1)}%"></i></div>
-      <div class="val">${ethf(x.eth)} ETH<small>${Math.round(mine * 100)}% of yours</small><small>${x.member ? Math.round(x.weight * 100) + "% in Chiron" : "no longer in the seven"}</small></div>
-      ${x.member ? "" : `<div class="why">Left the seven: ${esc(x.why || "it no longer passes the rule")}.</div>`}</div>`;
-  }).join("") : `<p class="mute">Nothing from Chiron in this wallet yet. Name an amount to draw all seven.</p>`;
+      <div class="val">${ethf(x.eth)} ETH<small>${Math.round(mine * 100)}% of yours</small><small>${x.member ? Math.round(x.weight * 100) + "% in Chiron" : x.own ? "Chiron's own token" : "no longer in the seven"}</small></div>
+      ${x.member || x.own ? "" : `<div class="why">Left the seven: ${esc(x.why || "it no longer passes the rule")}.</div>`}</div>`;
+  }).join("") : `<p class="mute">Nothing from Chiron in this wallet yet. Name an amount to buy all seven.</p>`;
   $("unpriced").textContent = h.unpriced.length ? `Not counted: ${h.unpriced.map((u) => `$${u.symbol} (${u.why})`).join(", ")}.` : "";
   $("rotateBox").hidden = !h.left;
   $("rotateTxt").textContent = h.left ? `${h.left} token${h.left > 1 ? "s" : ""} you hold ${h.left > 1 ? "have" : "has"} left the seven. A rotation sells ${h.left > 1 ? "them" : "it"} and moves the ETH to the slots you are lightest in.` : "";
@@ -97,7 +97,12 @@ async function loadWallet(fresh = false) {
 function renderSplit() {
   const v = +$("amount").value, ms = st?.quiver.members || [];
   if (!ms.length) { $("split").innerHTML = `<li>No token passes the rule right now, so there is nothing to buy.</li>`; return; }
-  $("split").innerHTML = ms.map((m) => `<li><span>$${esc(m.symbol)}</span><b>${v > 0 ? ethf(v * m.weight, 5) + " ETH" : Math.round(m.weight * 100) + "%"}</b></li>`).join("");
+  // Chiron's own token takes its share first; the seven split the rest
+  const own = st?.own?.tradable ? st.own : null, rest = own ? 1 - own.share : 1;
+  const row = (name, part) => `<li><span>${name}</span><b>${v > 0 ? ethf(v * part, 5) + " ETH" : Math.round(part * 100) + "%"}</b></li>`;
+  $("split").innerHTML = ms.map((m) => row("$" + esc(m.symbol), m.weight * rest)).join("") + (own ? row("$" + esc(own.symbol), own.share) : "");
+  $("ownTxt").hidden = !own;
+  if (own) $("ownTxt").textContent = `${Math.round(own.share * 100)}% of each buy goes into $${own.symbol}, Chiron's own token, as a last step you sign.`;
 }
 $("amount").addEventListener("input", renderSplit);
 $("presets").onclick = (e) => {
@@ -107,7 +112,7 @@ $("presets").onclick = (e) => {
 $("slip").onchange = async () => { try { await api("/api/settings", { method: "POST", body: JSON.stringify({ slippage: +$("slip").value }) }); toast("Slippage limit saved"); } catch (e) { toast(e.message); } };
 
 // ---------- plans ----------
-const TITLES = { buy: "Draw", rotate: "Rotate", sell: "Recall" };
+const TITLES = { buy: "Buy", rotate: "Rotate", sell: "Sell" };
 async function makePlan(action, errEl, eth) {
   if (running) return;
   errEl.textContent = "";

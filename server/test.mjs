@@ -90,6 +90,19 @@ ok("selling everything sells members and former members alike", () => {
   assert.equal(p.sells.length, 2); assert.equal(p.buys.length, 0);
   assert.equal(plan({ action: "sell", members: [], held }).sells.length, 2);            // works with an empty quiver too
 });
+ok("with Chiron's own token set, its share of a buy goes into it, after the seven", () => {
+  const own = { token: "own", symbol: "CHIRON", curve: "cown", share: 0.1 };
+  const p = plan({ action: "buy", eth: 0.1, members, own });
+  assert.equal(p.buys.length, 5); assert.equal(p.buys[4].token, "own"); near(p.buys[4].eth, 0.01, 1e-7);
+  near(sum(p.buys.map((b) => b.eth)), 0.1, 1e-7); assert.match(p.note, /10% buys \$CHIRON/);
+  assert.equal(plan({ action: "buy", eth: 0.1, members, own: null }).buys.length, 4);
+  assert.equal(plan({ action: "buy", eth: 0.0015, members, own }).buys.some((b) => b.own), false);   // its share would be under the smallest buy
+});
+ok("a rotation never sells Chiron's own token; selling everything does", () => {
+  const held = [{ ...tok("own", 0), raw: "7", eth: 0.05, member: false, own: true }, { ...tok("a", 0), raw: "9", eth: 0.2, member: true }];
+  assert.equal(plan({ action: "rotate", members, held }).sells.length, 0);
+  assert.equal(plan({ action: "sell", members, held }).sells.length, 2);
+});
 ok("steps put every sale before every buy", () => {
   const held = [{ ...tok("x", 0), raw: "500", eth: 0.1, member: false }];
   const s = stepsFor(plan({ action: "rotate", members, held }));

@@ -83,7 +83,7 @@ const round = (x) => Math.round(x * 1e8) / 1e8;
  * `held` = [{ token, symbol, curve, raw, eth, member }] where eth is what selling it all returns now.
  * Returns { action, sells: [{ token, symbol, curve, raw, eth }], buys: [{ token, symbol, curve, eth }], note }.
  */
-export function plan({ action, eth = 0, members = [], held = [], spare = 0 }, R = RULES) {
+export function plan({ action, eth = 0, members = [], held = [], spare = 0, own = null }, R = RULES) {
   const out = { action, sells: [], buys: [], note: "" };
   const sellAll = (h) => ({ token: h.token, symbol: h.symbol, curve: h.curve, raw: String(h.raw), eth: round(h.eth) });
   const buy = (m, x) => ({ token: m.token, symbol: m.symbol, curve: m.curve, eth: round(x) });
@@ -97,14 +97,20 @@ export function plan({ action, eth = 0, members = [], held = [], spare = 0 }, R 
 
   if (action === "buy") {
     if (!(eth > 0)) { out.note = "Enter how much ETH to spend."; return out; }
-    out.buys = members.map((m) => buy(m, eth * m.weight)).filter((b) => b.eth >= R.minBuyEth);
-    out.note = out.buys.length ? `${round(eth)} ETH split across ${out.buys.length} tokens by their share.` : `That amount is too small to split: each buy would be under ${R.minBuyEth} ETH.`;
+    // own = { token, symbol, curve, share }: Chiron's own token takes its share of the amount; the seven are bought first, then it
+    const mine = own && own.share > 0 ? eth * own.share : 0;
+    out.buys = members.map((m) => buy(m, (eth - mine) * m.weight)).filter((b) => b.eth >= R.minBuyEth);
+    const withOwn = mine >= R.minBuyEth && out.buys.length > 0;
+    if (withOwn) out.buys.push({ ...buy(own, mine), own: true });
+    out.note = !out.buys.length ? `That amount is too small to split: each buy would be under ${R.minBuyEth} ETH.`
+      : withOwn ? `${round(eth)} ETH: ${Math.round(own.share * 100)}% buys $${own.symbol}, the rest is split across ${out.buys.length - 1} tokens by their share.`
+      : `${round(eth)} ETH split across ${out.buys.length} tokens by their share.`;
     return out;
   }
 
   if (action === "rotate") {
     const isMember = new Set(members.map((m) => m.token));
-    const leaving = held.filter((h) => !isMember.has(h.token) && h.eth > 0);
+    const leaving = held.filter((h) => !isMember.has(h.token) && !h.own && h.eth > 0);   // Chiron's own token is never "rotated out"
     out.sells = leaving.map(sellAll);
     // 2% is held back from the sale: the price can move between the plan and the last signature
     const fresh = leaving.reduce((s, h) => s + h.eth, 0) * 0.98 + spare;

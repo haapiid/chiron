@@ -29,6 +29,7 @@ function render(st) {
   for (const el of document.querySelectorAll("[data-rule]")) { const v = st.rules[el.dataset.rule]; if (v != null) el.textContent = el.dataset.rule === "capWeight" ? Math.round(v * 100) : el.dataset.rule === "maxCostBps" ? v / 100 : v; }
   const errs = Object.keys(st.health.errors || {});
   $("health").textContent = errs.length ? `chain reads are slow (${errs.join(", ")})` : `block ${Number(st.health.block).toLocaleString("en-US")}`;
+  if (st.own?.tradable) { $("ownPct").textContent = Math.round(st.own.share * 100); $("ownSym").textContent = "$" + st.own.symbol; $("ownRule").hidden = false; }
   art(st.art || []);
 }
 
