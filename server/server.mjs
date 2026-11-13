@@ -236,8 +236,10 @@ http.createServer(async (req, res) => {
   const rel = ROUTES[u.pathname] || u.pathname.slice(1);
   const f = path.normalize(path.join(SITE, rel));
   if (!f.startsWith(SITE) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { res.writeHead(404, { "content-type": "text/plain" }); return res.end("not found"); }
-  const ext = path.extname(f);
-  res.writeHead(200, { "content-type": TYPES[ext] || "application/octet-stream", "cache-control": ext === ".html" ? "no-cache" : "public, max-age=300" });
+  const ext = path.extname(f), mtime = fs.statSync(f).mtime.toUTCString();
+  // pages, styles and scripts are checked on every load, so a new stylesheet never meets an old page
+  if (req.headers["if-modified-since"] === mtime) { res.writeHead(304, { "cache-control": "no-cache", "last-modified": mtime }); return res.end(); }
+  res.writeHead(200, { "content-type": TYPES[ext] || "application/octet-stream", "cache-control": /^\.(html|css|js)$/.test(ext) ? "no-cache" : "public, max-age=300", ...(mtime ? { "last-modified": mtime } : {}) });
   if (req.method === "HEAD") return res.end();
   fs.createReadStream(f).pipe(res);
 }).listen(PORT, HOST, () => console.log(`CHIRON on http://${HOST}:${PORT}`));

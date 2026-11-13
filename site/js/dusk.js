@@ -104,6 +104,7 @@ void main(){
     // the walker (.walker in the page) stands on it, a little over a third of the way toward the viewer
     const A = 0.6, B = 1.02, S = 0.36, hero = cv.parentElement;
     gl.uniform3f(U("road"), A, B, narrow ? 0 : 1);
+    hero.classList.toggle("has-road", !narrow);
     hero.style.setProperty("--wx", `${((A + (B - A) * S) * r.width).toFixed(1)}px`);
     hero.style.setProperty("--wy", `${(hz * (1 - S) * r.height).toFixed(1)}px`);
     hero.style.setProperty("--wh", `${(r.height * 0.13).toFixed(1)}px`);
