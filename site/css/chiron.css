@@ -73,19 +73,25 @@ td .link,.steplist .link{letter-spacing:.06em;text-transform:none;font-size:13px
 .stars a.on{opacity:1}
 .stars a b{display:block;font:400 12px var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--text)}
 .stars a:hover b{color:var(--gold)}
-/* Chiron on the road (placed by js/dusk.js: --wx, --wy from the bottom, --wh tall); his legs keep a slow walking gait */
-.walker{display:none;position:absolute;z-index:2;left:var(--wx);bottom:var(--wy);height:var(--wh);width:calc(var(--wh)*200/190);transform:translate(-56%,5%);pointer-events:none;overflow:visible;opacity:0;animation:appear 1.6s .6s ease forwards}
-/* he is shown only once the shader has drawn the road he stands on (js/dusk.js sets .has-road and his place) */
+/* Chiron on the road. .walker is a point: the spot where his hooves meet the stone (js/dusk.js sets --wx, --wy from the
+   bottom, and --wh, his height). He is drawn from behind and lit from ahead: dark, with a rim of the last light. */
+.walker{display:none;position:absolute;z-index:2;left:var(--wx);bottom:var(--wy);width:0;height:0;pointer-events:none;opacity:0;animation:appear 1.6s .6s ease forwards}
 .hero.has-road .walker{display:block}
+.walker svg{position:absolute;left:0;bottom:0;height:calc(var(--wh)*262/210);width:calc(var(--wh)*160/210);max-width:none;transform:translate(-50%,19.85%);overflow:visible}
+.walker img{position:absolute;left:0;bottom:0;height:var(--wh);width:auto;max-width:none;transform:translate(-50%,3%);filter:drop-shadow(0 6px 5px rgba(3,5,10,.55))}
+.walker .body{filter:drop-shadow(0 -1.1px .5px rgba(255,214,170,.72)) drop-shadow(-.7px 0 .4px rgba(233,192,142,.3)) drop-shadow(.7px 0 .4px rgba(233,192,142,.26));animation:bob 1.3s ease-in-out infinite alternate}
+.walker .cast{filter:blur(2.5px)}
+.walker .hl,.walker .tail,.walker .upper{transform-box:fill-box}
+.walker .hl{transform-origin:50% 0;animation:stride 1.3s ease-in-out infinite alternate}
+.walker .hl.r{animation-direction:alternate-reverse}
+.walker .tail{transform-origin:50% 0;animation:sway 2.6s ease-in-out infinite alternate}
+.walker .upper{transform-origin:50% 100%;animation:lean 2.6s ease-in-out infinite alternate}
 @keyframes appear{to{opacity:1}}
-.walker .body{fill:#090c14;stroke:#090c14;filter:drop-shadow(-1.6px -.7px 0 rgba(233,192,142,.85));animation:bob 1.1s ease-in-out infinite alternate}
-.walker .shade{fill:rgba(4,6,10,.55)}
-/* the legs rest in mid-stride (the transform attributes in the page); the gait swings them through it */
-.walker .leg{transform-box:fill-box;transform-origin:50% 4%;animation:step 2.2s ease-in-out infinite alternate}
-.walker .leg.b,.walker .leg.c{animation-direction:alternate-reverse}
-@keyframes step{from{transform:rotate(-13deg)}to{transform:rotate(13deg)}}
-@keyframes bob{from{transform:translateY(0)}to{transform:translateY(-1.5px)}}
-@media (prefers-reduced-motion:reduce){.walker{animation:none;opacity:1}.walker .leg,.walker .body{animation:none}}
+@keyframes bob{from{transform:translateY(0)}to{transform:translateY(-1.2px)}}
+@keyframes stride{from{transform:translateY(0) scaleY(1)}to{transform:translateY(-2.5px) scaleY(.975)}}
+@keyframes sway{from{transform:rotate(-3deg)}to{transform:rotate(3deg)}}
+@keyframes lean{from{transform:rotate(-.9deg)}to{transform:rotate(.9deg)}}
+@media (prefers-reduced-motion:reduce){.walker{animation:none;opacity:1}.walker .body,.walker .hl,.walker .tail,.walker .upper{animation:none}}
 .hero-in{position:relative;z-index:3;height:100%;display:flex;flex-direction:column;justify-content:center;padding-top:var(--nav);padding-bottom:110px}
 .hero h1 span{display:block;width:fit-content}
 .rule-line{width:48px;height:1px;background:rgba(236,231,223,.55);margin:clamp(24px,3.2vw,38px) 0 clamp(20px,2.4vw,28px)}

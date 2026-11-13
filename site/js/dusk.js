@@ -62,9 +62,9 @@ void main(){
     c = scene(q)*mix(.86, .46, d) + vec3(.012, .02, .035)*d;
     float gx = (p.x - .58)*res.x/res.y;
     c += vec3(1., .8, .58)*pow(n(vec2(p.x*420., k*9. - t*2.)), 18.)*exp(-gx*gx*2.2)*(.25 + d)*.9;
-    // the road: a stone causeway from the near shore to the foot of the moon, its left edge catching the last light
+    // the road: a stone causeway that runs away from the viewer to the foot of the moon, its left edge catching the last light
     if (road.z > .5) {
-      float xc = mix(road.x, road.y, d), w = .004 + .05*d, side = (p.x - xc)/w;
+      float xc = mix(road.x, road.y, d), w = .005 + .075*d, side = (p.x - xc)/w;
       vec3 stone = mix(vec3(.46, .40, .37), vec3(.20, .21, .26), smoothstep(0., .9, d));
       stone *= .82 + .36*fbm(vec2(p.x*70., d*46.));
       stone *= 1. - .3*smoothstep(.95, 1., fract(pow(d, .55)*16.));                    // joints between the slabs, closer together far away
@@ -100,14 +100,14 @@ void main(){
     gl.uniform2f(U("res"), cv.width, cv.height); gl.uniform1f(U("hz"), hz);
     // the moon sits low, just risen: under the constellation on wide screens, beside it on a phone
     gl.uniform3f(U("moon"), narrow ? 0.74 : 0.6, hz + (narrow ? 0.085 : 0.115), narrow ? 0.05 : 0.088);
-    // the road runs from the foot of the moon to the lower right corner (wide screens only: on a phone the text sits there);
-    // the walker (.walker in the page) stands on it, a little over a third of the way toward the viewer
-    const A = 0.6, B = 1.02, S = 0.36, hero = cv.parentElement;
+    // the road runs from the foot of the moon almost straight toward the viewer (wide screens only: on a phone the text sits there);
+    // the walker (.walker in the page) stands on it with his back to us, two fifths of the way down
+    const A = 0.6, B = 0.665, S = 0.4, hero = cv.parentElement;
     gl.uniform3f(U("road"), A, B, narrow ? 0 : 1);
     hero.classList.toggle("has-road", !narrow);
     hero.style.setProperty("--wx", `${((A + (B - A) * S) * r.width).toFixed(1)}px`);
     hero.style.setProperty("--wy", `${(hz * (1 - S) * r.height).toFixed(1)}px`);
-    hero.style.setProperty("--wh", `${(r.height * 0.13).toFixed(1)}px`);
+    hero.style.setProperty("--wh", `${(r.height * 0.175).toFixed(1)}px`);
     if (still) draw(0);
   };
   fit(); addEventListener("resize", fit);

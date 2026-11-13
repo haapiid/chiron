@@ -112,8 +112,8 @@ const ipOf = (req) => (/^(::ffff:)?127\.0\.0\.1$|^::1$/.test(req.socket.remoteAd
 const hits = new Map();
 const limited = (key, n, ms) => { const now = Date.now(), a = (hits.get(key) || []).filter((t) => now - t < ms); a.push(now); hits.set(key, a); if (hits.size > 20_000) hits.clear(); return a.length > n; };
 
-// chapter pictures the owner has dropped into site/img (ch-seven, ch-rule, ch-record, ch-limits)
-const chapterArt = () => { try { return fs.readdirSync(path.join(SITE, "img")).filter((f) => /^ch-[a-z]+\.(webp|jpe?g|png|avif)$/i.test(f)); } catch { return []; } };
+// pictures the owner has dropped into site/img: chapters (ch-seven, ch-rule, ch-record, ch-limits) and the walker's cut-out (chiron)
+const chapterArt = () => { try { return fs.readdirSync(path.join(SITE, "img")).filter((f) => /^(ch-[a-z]+|chiron)\.(webp|jpe?g|png|avif)$/i.test(f)); } catch { return []; } };
 
 function publicState() {
   const q = S.quiver;

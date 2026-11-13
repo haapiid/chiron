@@ -12,6 +12,9 @@ function art(files) {
     img.onload = () => head.classList.remove("bare");
     img.src = "/img/" + file;
   }
+  // a rendered cut-out of Chiron (transparent background, seen from behind, hooves at the bottom edge) replaces the drawing
+  const cut = files.find((f) => /^chiron\./i.test(f)), w = document.querySelector(".walker");
+  if (cut && w) { const img = w.querySelector("img"); img.onload = () => { img.hidden = false; w.querySelector("svg").style.display = "none"; }; img.src = "/img/" + cut; }
 }
 
 function render(st) {
