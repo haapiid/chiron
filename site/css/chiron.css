@@ -81,17 +81,18 @@ td .link,.steplist .link{letter-spacing:.06em;text-transform:none;font-size:13px
 .walker img{position:absolute;left:0;bottom:0;height:var(--wh);width:auto;max-width:none;transform:translate(-50%,3%);filter:drop-shadow(0 6px 5px rgba(3,5,10,.55))}
 .walker .body{filter:drop-shadow(0 -1.1px .5px rgba(255,214,170,.72)) drop-shadow(-.7px 0 .4px rgba(233,192,142,.3)) drop-shadow(.7px 0 .4px rgba(233,192,142,.26));animation:bob 1.3s ease-in-out infinite alternate}
 .walker .cast{filter:blur(2.5px)}
-.walker .hl,.walker .tail,.walker .upper{transform-box:fill-box}
+.walker .hl,.walker .tail{transform-box:fill-box}
 .walker .hl{transform-origin:50% 0;animation:stride 1.3s ease-in-out infinite alternate}
 .walker .hl.r{animation-direction:alternate-reverse}
 .walker .tail{transform-origin:50% 0;animation:sway 2.6s ease-in-out infinite alternate}
-.walker .upper{transform-origin:50% 100%;animation:lean 2.6s ease-in-out infinite alternate}
+/* the human half and the bow lean together, about the waist */
+.walker .upper,.walker .bow{transform-box:view-box;transform-origin:80px 86px;animation:lean 2.6s ease-in-out infinite alternate}
 @keyframes appear{to{opacity:1}}
 @keyframes bob{from{transform:translateY(0)}to{transform:translateY(-1.2px)}}
 @keyframes stride{from{transform:translateY(0) scaleY(1)}to{transform:translateY(-2.5px) scaleY(.975)}}
 @keyframes sway{from{transform:rotate(-3deg)}to{transform:rotate(3deg)}}
 @keyframes lean{from{transform:rotate(-.9deg)}to{transform:rotate(.9deg)}}
-@media (prefers-reduced-motion:reduce){.walker{animation:none;opacity:1}.walker .body,.walker .hl,.walker .tail,.walker .upper{animation:none}}
+@media (prefers-reduced-motion:reduce){.walker{animation:none;opacity:1}.walker .body,.walker .hl,.walker .tail,.walker .upper,.walker .bow{animation:none}}
 .hero-in{position:relative;z-index:3;height:100%;display:flex;flex-direction:column;justify-content:center;padding-top:var(--nav);padding-bottom:110px}
 .hero h1 span{display:block;width:fit-content}
 .rule-line{width:48px;height:1px;background:rgba(236,231,223,.55);margin:clamp(24px,3.2vw,38px) 0 clamp(20px,2.4vw,28px)}
