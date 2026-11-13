@@ -112,10 +112,13 @@ const ipOf = (req) => (/^(::ffff:)?127\.0\.0\.1$|^::1$/.test(req.socket.remoteAd
 const hits = new Map();
 const limited = (key, n, ms) => { const now = Date.now(), a = (hits.get(key) || []).filter((t) => now - t < ms); a.push(now); hits.set(key, a); if (hits.size > 20_000) hits.clear(); return a.length > n; };
 
+// chapter pictures the owner has dropped into site/img (ch-seven, ch-rule, ch-record, ch-limits)
+const chapterArt = () => { try { return fs.readdirSync(path.join(SITE, "img")).filter((f) => /^ch-[a-z]+\.(webp|jpe?g|png|avif)$/i.test(f)); } catch { return []; } };
+
 function publicState() {
   const q = S.quiver;
   return {
-    now: Date.now(), chainId: CHAIN_ID, explorer: EXPLORER, ethUsd: eth?.mid || null, rules: RULES,
+    now: Date.now(), chainId: CHAIN_ID, explorer: EXPLORER, ethUsd: eth?.mid || null, rules: RULES, art: chapterArt(),
     quiver: {
       at: q.at, next: q.at ? q.at + DRAW_EVERY : null, size: RULES.size,
       members: q.members.map((m) => { const s = memes.series(m.token, 48); return { token: m.token, symbol: m.symbol, weight: m.weight, volEth: +m.volEth.toFixed(3), risk: m.risk, cost: m.cost ?? null, since: m.since, change: s.change, spark: s.pts.map((p) => p[1]) }; }),

@@ -29,7 +29,7 @@ API: `/api/state` (public), `/api/token`, `/api/auth/nonce|verify|logout`, `/api
 The first start reads 24 hours of Pons trades from the public RPC, which takes a while; the quiver fills once that is done. State lives in `data/` (not in git).
 
 ## Site
-Static HTML/CSS/JS in `site/`, no build step. `js/sky.js` draws the hero: Sagittarius from its real star positions, seven of its stars carrying the live members, arrows of light on load and when the main button is reached. Fonts: Syne (display) and Onest (text) from Google Fonts. Everything animated has a reduced-motion still.
+Static HTML/CSS/JS in `site/`, no build step, in the same visual family as ARCHY (thin Jost, IBM Plex Mono, navy / ivory / gold). The hero is two canvases: `js/dusk.js` (a WebGL dusk sea: sky, turning moon from `img/moon.jpg`, ridges, mist, mirrored water) and `js/sky.js` (Sagittarius from its real star positions, seven stars carrying the live members, arrows of light). Each chapter shows a picture when its file exists in `site/img/` (`ch-seven`, `ch-rule`, `ch-record`, `ch-limits`, as webp/jpg/png); without one the chapter is text only. Everything animated has a reduced-motion still.
 
 ## Honest limits
 Pons curve tokens only. Every trade pays the curve fee (1%) and the token's creator tax, so buying and selling straight back loses several percent. A full buy is one transaction per token. The rug scan catches common traps, not every one; memecoins can go to zero. Not advice; not affiliated with Robinhood, Pons or Uniswap.

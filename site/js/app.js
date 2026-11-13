@@ -30,7 +30,7 @@ function renderState() {
   $("trades").innerHTML = tr.length ? tr.map((t) => `<tr><td class="mute">${ago(t.t)}</td><td>${esc(t.side)}</td><td><b>${esc(t.what)}</b></td><td class="r">${ethf(t.eth)}</td><td class="mute">${esc(t.why)}</td></tr>`).join("")
     : `<tr><td colspan="5" class="mute">The books open once ${st.openAt} slots are filled.</td></tr>`;
   const errs = Object.keys(st.health.errors || {});
-  $("health").textContent = errs.length ? `Reading the chain is slow right now (${errs.join(", ")}).` : `Pons read to block ${Number(st.health.block).toLocaleString("en-US")}. The seven were last checked ${ago(q.at)}.`;
+  $("health").textContent = errs.length ? `Chain reads are slow right now (${errs.join(", ")}).` : `Block ${Number(st.health.block).toLocaleString("en-US")}. The seven were last checked ${ago(q.at)}.`;
   renderSplit();
 }
 async function tick() { try { st = await api("/api/state"); renderState(); } catch { $("health").textContent = "The server is not answering. Retrying."; } }
@@ -80,7 +80,7 @@ function renderWallet() {
       <div class="bars"><i style="--w:${((mine / maxW) * 100).toFixed(1)}%"></i><i style="--w:${((x.weight / maxW) * 100).toFixed(1)}%"></i></div>
       <div class="val">${ethf(x.eth)} ETH<small>${Math.round(mine * 100)}% of yours</small><small>${x.member ? Math.round(x.weight * 100) + "% in the quiver" : "not in the quiver"}</small></div>
       ${x.member ? "" : `<div class="why">Left the quiver: ${esc(x.why || "it no longer passes the rule")}.</div>`}</div>`;
-  }).join("") : `<p class="mute">Nothing from the quiver in this wallet yet. Enter an amount on the right to buy all seven.</p>`;
+  }).join("") : `<p class="mute">Nothing from the quiver in this wallet yet. Name an amount to draw all seven.</p>`;
   $("unpriced").textContent = h.unpriced.length ? `Not counted: ${h.unpriced.map((u) => `$${u.symbol} (${u.why})`).join(", ")}.` : "";
   $("rotateBox").hidden = !h.left;
   $("rotateTxt").textContent = h.left ? `${h.left} token${h.left > 1 ? "s" : ""} you hold ${h.left > 1 ? "have" : "has"} left the quiver. A rotation sells ${h.left > 1 ? "them" : "it"} and moves the ETH to the slots you are lightest in.` : "";
@@ -107,7 +107,7 @@ $("presets").onclick = (e) => {
 $("slip").onchange = async () => { try { await api("/api/settings", { method: "POST", body: JSON.stringify({ slippage: +$("slip").value }) }); toast("Slippage limit saved"); } catch (e) { toast(e.message); } };
 
 // ---------- plans ----------
-const TITLES = { buy: "Buy all seven", rotate: "Rotate", sell: "Sell everything" };
+const TITLES = { buy: "Draw", rotate: "Rotate", sell: "Recall" };
 async function makePlan(action, errEl, eth) {
   if (running) return;
   errEl.textContent = "";

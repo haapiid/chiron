@@ -3,24 +3,25 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Chiron: the quiver</title>
+<title>CHIRON · The quiver</title>
 <meta name="description" content="The seven memecoins in the quiver right now, the paper record, and your own wallet. Connect only to buy, rotate or sell.">
-<meta name="theme-color" content="#060718">
+<meta name="theme-color" content="#0e121c">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Onest:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="/css/chiron.css">
 </head>
 <body class="app">
 <header class="nav solid" id="nav"><div class="wrap">
-  <a class="brand" href="/" aria-label="Chiron, home"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M11 5q12 11 0 22" fill="none" stroke="#eeebf7" stroke-width="2" stroke-linecap="round"/><path d="M11 5v22" stroke="#eeebf7" stroke-opacity=".45"/><path d="M5 16h19" stroke="#ffb155" stroke-width="2" stroke-linecap="round"/><path d="M28 16l-7-4 1.8 4-1.8 4z" fill="#ffb155"/></svg>Chiron</a>
+  <a class="brand" href="/" aria-label="Chiron, home"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M11 5q12 11 0 22" fill="none" stroke="#ece7df" stroke-width="1.4" stroke-linecap="round"/><path d="M11 5v22" stroke="#ece7df" stroke-opacity=".45" stroke-width=".8"/><path d="M5 16h19" stroke="#e9c08e" stroke-width="1.4" stroke-linecap="round"/><path d="M28 16l-7-3.6 1.8 3.6-1.8 3.6z" fill="#e9c08e"/></svg>Chiron</a>
   <nav aria-label="Site"><a href="/">Home</a><a href="/#rule">The rule</a><a href="/#limits">Limits</a></nav>
   <button class="ca" id="ca" hidden><span id="caText"></span></button>
   <button class="btn sm" id="connect">Connect wallet</button>
 </div></header>
 
 <main class="wrap app-main">
-  <h1>The quiver</h1>
+  <p class="eyebrow">Robinhood Chain · live</p>
+  <h1>The <em>quiver</em></h1>
   <div class="tabs" role="tablist">
     <button role="tab" data-tab="seven" aria-selected="true">The seven</button>
     <button role="tab" data-tab="record" aria-selected="false">The record</button>
@@ -30,12 +31,12 @@
   <section data-pane="seven">
     <div class="kpis">
       <div><b id="kSlots">–</b>slots filled</div>
-      <div><b id="kNext">–</b>next check of the seven</div>
-      <div><b id="kVol">–</b>traded on Pons in 24 h</div>
-      <div><b id="kNew">–</b>tokens launched in 24 h</div>
+      <div><b id="kNext">–</b>next check</div>
+      <div><b id="kVol">–</b>on Pons, 24 h</div>
+      <div><b id="kNew">–</b>launches, 24 h</div>
     </div>
     <div class="arrows in" id="arrows" aria-live="polite"></div>
-    <h3 style="margin:44px 0 6px">Who came and went</h3>
+    <p class="eyebrow plain log-h">In and out</p>
     <ul class="log" id="log"></ul>
     <p class="small mute" id="health" style="margin-top:22px"></p>
   </section>
@@ -44,14 +45,14 @@
     <div class="books" id="books"></div>
     <div class="chart"><svg id="eq" viewBox="0 0 800 280" preserveAspectRatio="none" role="img" aria-label="Return of the three paper books over time"></svg></div>
     <p class="chart-note" id="recNote"></p>
-    <h3 style="margin:44px 0 6px">What the rotated book did</h3>
+    <p class="eyebrow plain log-h">What the rotated book did</p>
     <div class="scroll"><table><thead><tr><th>When</th><th></th><th>Token</th><th class="r">ETH</th><th>Why</th></tr></thead><tbody id="trades"></tbody></table></div>
   </section>
 
   <section data-pane="wallet" hidden>
     <div class="gate" id="gate">
-      <h2>Sign in with your wallet</h2>
-      <p class="mute">One signed message proves the wallet is yours. It sends nothing and costs no gas. Chiron never gets a key: every buy and every sale is a transaction your wallet signs or refuses.</p>
+      <h2>Sign in with <em>your wallet</em></h2>
+      <p class="mute">One signed message proves the wallet is yours. It sends nothing and costs no gas. Chiron never holds a key: your wallet signs or refuses every trade.</p>
       <button class="btn fly" id="signin">Connect and sign in</button>
       <p class="err" id="gateErr"></p>
       <p class="small mute" id="noWallet" hidden>No wallet found in this browser. Open this page in MetaMask, Rabby, Coinbase Wallet or the Robinhood Wallet browser.</p>
@@ -75,7 +76,7 @@
             <ol class="steplist" id="steps"></ol>
             <div class="actions"><button class="btn fly" id="run">Sign the steps</button><button class="btn sm" id="stop" hidden>Stop after this step</button><button class="link" id="cancel" style="background:none;border:0;cursor:pointer;padding:0">Discard the plan</button></div>
             <p class="err" id="runErr"></p><p class="okmsg" id="runOk"></p>
-            <p class="small mute" style="margin-top:14px">Each step is priced again right before you sign it, with your slippage limit. Sales go first, so the ETH exists before it is spent. A little ETH always stays in the wallet for gas.</p>
+            <p class="small mute" style="margin-top:14px">Each step is priced again right before you sign it. Sales go first, so the ETH is there before it is spent. A little ETH always stays behind for gas.</p>
           </div>
 
           <div class="panel">
@@ -86,7 +87,7 @@
 
         <div>
           <div class="panel">
-            <h3>Buy all seven</h3>
+            <h3>Draw: buy all seven</h3>
             <p class="mute small" id="freeTxt"></p>
             <div class="field"><label for="amount">ETH to spend</label>
               <div class="amount"><input id="amount" inputmode="decimal" placeholder="0.05" autocomplete="off"><span class="mute">ETH</span></div>
@@ -98,12 +99,12 @@
           </div>
           <div class="panel">
             <h3>Slippage limit</h3>
-            <p class="mute small">A step fails instead of filling at a price worse than this. Thin curves move fast, so very low limits fail often.</p>
+            <p class="mute small">A step fails rather than fill at a worse price than this. Thin curves move fast, so a very low limit fails often.</p>
             <div class="field"><label for="slip" class="sr">Slippage limit</label><select id="slip"><option value="0.01">1%</option><option value="0.02">2%</option><option value="0.03">3%</option><option value="0.05">5%</option><option value="0.1">10%</option></select></div>
           </div>
           <div class="panel">
-            <h3>Sell everything</h3>
-            <p class="mute small">One plan sells every quiver token in this wallet back to ETH, members and former members alike.</p>
+            <h3>Recall: sell everything</h3>
+            <p class="mute small">One plan sells every quiver token in this wallet back to ETH, former members included.</p>
             <div class="actions"><button class="btn" id="sellBtn">Plan the sale</button><button class="link" id="signout" style="background:none;border:0;cursor:pointer;padding:0;margin-left:auto">Sign out</button></div>
           </div>
         </div>

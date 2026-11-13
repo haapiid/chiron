@@ -1,20 +1,20 @@
-// The hero sky: Sagittarius, drawn from its real star positions. Seven of its stars are the seven slots of the quiver,
+// The constellation over the hero (the sky itself is js/dusk.js): Sagittarius, drawn from its real star positions. Seven of its stars are the seven slots of the quiver,
 // sized by share; the eighth (Alnasl, the arrowhead) is CHIRON's own. The lines draw themselves once, arrows of light
-// fly to the seven, and the field twinkles and leans a little with the pointer. With reduced motion it is one still frame.
+// fly to the seven, and the whole figure leans a little with the pointer. With reduced motion it is one still frame.
 window.Sky = (function () {
   // normalized from right ascension / declination (east is left, as on a star chart)
   const STARS = { tau: [0, 0.17], zeta: [0.072, 0.337], sigma: [0.191, 0.067], phi: [0.348, 0.119], lambda: [0.638, 0], epsilon: [0.7, 0.677], delta: [0.752, 0.333], gamma: [1, 0.378] };
   const LINES = [["gamma", "delta"], ["delta", "lambda"], ["delta", "epsilon"], ["gamma", "epsilon"], ["lambda", "phi"], ["delta", "phi"], ["phi", "sigma"], ["sigma", "tau"], ["tau", "zeta"], ["zeta", "phi"], ["zeta", "epsilon"]];
   const SLOTS = ["delta", "lambda", "epsilon", "phi", "sigma", "zeta", "tau"];          // the heaviest member takes the middle of the bow
-  const LABEL = { delta: [16, 6, "l"], lambda: [0, -50, "c"], epsilon: [0, 18, "c"], phi: [6, -50, "c"], sigma: [-6, -50, "c"], zeta: [-22, -44, "r"], tau: [-16, -14, "r"] };
+  const LABEL = { delta: [16, 6, "l"], lambda: [0, -50, "c"], epsilon: [0, 18, "c"], phi: [12, 10, "l"], sigma: [-6, -50, "c"], zeta: [-22, -44, "r"], tau: [-16, -14, "r"] };
   // on a phone the sky is narrow: two labels move so none leaves the screen or sits on another
   const LABEL_NARROW = { ...LABEL, zeta: [0, 18, "c"], tau: [0, 16, "c"], phi: [10, 10, "l"], delta: [14, -40, "l"] };
-  const EMBER = "255,177,85", ICE = "190,214,255";
+  const EMBER = "233,192,142", ICE = "206,220,246";
 
   /** avoid: an element (the headline) whose top edge the left half of the constellation must stay above */
   function init(canvas, labels, avoid) {
     const ctx = canvas.getContext("2d"), still = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let W = 0, H = 0, dpr = 1, field = [], pos = {}, members = [], arrows = [], flash = {}, t0 = performance.now(), on = true, raf = 0;
+    let W = 0, H = 0, dpr = 1, pos = {}, members = [], arrows = [], flash = {}, t0 = performance.now(), on = true, raf = 0;
     let px = 0, py = 0, tx = 0, ty = 0, lastAmbient = 0, opened = false, narrow = false, compact = false;
 
     function layout() {
@@ -23,16 +23,12 @@ window.Sky = (function () {
       canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
       narrow = W < 760;
       // wide screens: as large as fits above the headline, or beside it when the screen is short
-      const limit = avoid ? avoid.getBoundingClientRect().top - r.top : H * 0.42;
       const right = avoid ? Math.max(...[...avoid.children].map((c) => c.getBoundingClientRect().right)) - r.left : W * 0.5;
-      const above = (limit - 116 - 18) / 0.337, beside = W * 0.9 - right - 56;
-      const bw = narrow ? W * 0.64 : Math.max(260, Math.min(W * 0.42, Math.max(above, beside)));
-      const x0 = narrow ? W * 0.17 : W * 0.9 - bw, y0 = narrow ? 128 : above >= beside ? 116 : Math.max(116, (H - bw * 0.677) / 2 - 40);
-      compact = narrow || bw < 480;
+      // wide screens: beside the headline, and small enough to stay above the waterline
+      const bw = narrow ? W * 0.64 : Math.max(240, Math.min(W * 0.42, W * 0.9 - right - 170, (H * 0.62 - 150) / 0.677));
+      const x0 = narrow ? W * 0.17 : W * 0.9 - bw, y0 = narrow ? 128 : 112;
+      compact = narrow || bw < 520;
       pos = Object.fromEntries(Object.entries(STARS).map(([k, [x, y]]) => [k, { x: x0 + x * bw, y: y0 + y * bw }]));
-      const n = Math.min(520, Math.round((W * H) / 2600));
-      let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-      field = Array.from({ length: n }, () => ({ x: rnd(), y: Math.pow(rnd(), 1.25), r: 0.35 + Math.pow(rnd(), 4) * 1.5, ph: rnd() * 6.28, sp: 0.4 + rnd() * 1.6, d: 0.2 + rnd() * 0.8, warm: rnd() > 0.86 }));
       place();
       if (still) frame(performance.now());
     }
@@ -74,19 +70,6 @@ window.Sky = (function () {
       px += (tx - px) * 0.05; py += (ty - py) * 0.05;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.clearRect(0, 0, W, H);
 
-      // slow haze: three soft clouds of colour that drift
-      for (const [cx, cy, rr, col, sp] of [[0.72, 0.36, 0.5, "120,112,255,.16", 0.05], [0.3, 0.2, 0.42, "70,130,255,.10", 0.035], [0.55, 1.02, 0.55, "255,140,90,.13", 0.045]]) {
-        const x = (cx + Math.sin(t * sp + cx * 9) * 0.04) * W, y = (cy + Math.cos(t * sp * 1.3 + cy * 7) * 0.03) * H, R = rr * Math.max(W, H);
-        const g = ctx.createRadialGradient(x, y, 0, x, y, R);
-        g.addColorStop(0, `rgba(${col})`); g.addColorStop(1, "rgba(0,0,0,0)");
-        ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-      }
-      // the field
-      for (const s of field) {
-        const a = still ? 0.7 : 0.45 + 0.55 * Math.sin(t * s.sp + s.ph) ** 2;
-        ctx.fillStyle = s.warm ? `rgba(255,214,170,${a * 0.9})` : `rgba(226,232,255,${a * 0.85})`;
-        ctx.beginPath(); ctx.arc(s.x * W + px * s.d * 16, s.y * H + py * s.d * 10, s.r, 0, 6.2832); ctx.fill();
-      }
       const P = (k) => ({ x: pos[k].x + px * 26, y: pos[k].y + py * 16 });
 
       // the constellation lines draw themselves, one after the other
