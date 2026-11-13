@@ -10,7 +10,7 @@
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const vs = `attribute vec2 p; void main(){ gl_Position = vec4(p, 0., 1.); }`;
   const fs = `precision highp float;
-uniform vec2 res; uniform float t, hz, moonOn; uniform vec3 moon; uniform sampler2D map;
+uniform vec2 res; uniform float t, hz, moonOn; uniform vec3 moon, road; uniform sampler2D map;
 float h(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
 float n(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.-2.*f);
   return mix(mix(h(i), h(i+vec2(1,0)), f.x), mix(h(i+vec2(0,1)), h(i+vec2(1,1)), f.x), f.y); }
@@ -25,7 +25,7 @@ vec3 scene(vec2 p){
   c += vec3(.95, .68, .44)*glow*.8;
   // stars: one per cell at most, each with its own pace
   vec2 sp = p*vec2(asp, 1.)*150., id = floor(sp), f = fract(sp) - .5;
-  float r = h(id), st = step(.984, r)*smoothstep(.13, 0., length(f + (vec2(h(id + 3.1), h(id + 7.7)) - .5)*.6));
+  float r = h(id), st = step(.984, r)*(1. - smoothstep(0., .13, length(f + (vec2(h(id + 3.1), h(id + 7.7)) - .5)*.6)));
   c += vec3(.92, .94, 1.)*st*(.5 + .5*sin(t*(.8 + r*2.6) + r*60.))*smoothstep(.1, .45, y)*(.4 + .6*h(id + 1.3));
   // the moon: a sphere wearing the lunar map, turning under a light that stays put
   if (moonOn > .5) {
@@ -37,15 +37,15 @@ vec3 scene(vec2 p){
       float D = texture2D(map, vec2(fract(uv.x), 1. - uv.y)).r + .45;
       float diff = clamp(dot(nrm, normalize(vec3(-.55, -.5, .62))), 0., 1.);
       vec3 mc = vec3(.80, .77, .74)*D*(.10 + .95*pow(diff, .85)) + vec3(.95, .80, .62)*pow(1. - z, 3.)*.3;
-      c = mix(c, mc, .93*smoothstep(1., .975, sqrt(rr)));
+      c = mix(c, mc, .93*(1. - smoothstep(.975, 1., sqrt(rr))));
     }
   }
   // two ridges, the far one paler
   float e = smoothstep(.5, 1., p.x) + .45*smoothstep(.3, 0., p.x);
   float far = hz + .012 + (.05 + .09*e)*fbm(vec2(p.x*2.4 + 3., 1.));
   float near = hz + .004 + (.02 + .10*smoothstep(.72, 1., p.x))*fbm(vec2(p.x*4.2 + 9., 4.));
-  c = mix(c, mix(vec3(.24, .25, .31), vec3(.13, .15, .20), smoothstep(hz, far, p.y)), smoothstep(far + .002, far - .002, p.y));
-  c = mix(c, mix(vec3(.15, .16, .21), vec3(.055, .07, .105), smoothstep(hz, near, p.y)), smoothstep(near + .002, near - .002, p.y));
+  c = mix(c, mix(vec3(.24, .25, .31), vec3(.13, .15, .20), smoothstep(hz, far, p.y)), (1. - smoothstep(far - .002, far + .002, p.y)));
+  c = mix(c, mix(vec3(.15, .16, .21), vec3(.055, .07, .105), smoothstep(hz, near, p.y)), (1. - smoothstep(near - .002, near + .002, p.y)));
   // mist lying on the horizon
   float band = exp(-pow((p.y - hz - .012)/.03, 2.));
   c = mix(c, vec3(.66, .60, .60), smoothstep(.35, .9, fbm(vec2(p.x*2.6 - t*.02, p.y*16. + t*.008)))*band*.42);
@@ -62,6 +62,18 @@ void main(){
     c = scene(q)*mix(.86, .46, d) + vec3(.012, .02, .035)*d;
     float gx = (p.x - .58)*res.x/res.y;
     c += vec3(1., .8, .58)*pow(n(vec2(p.x*420., k*9. - t*2.)), 18.)*exp(-gx*gx*2.2)*(.25 + d)*.9;
+    // the road: a stone causeway from the near shore to the foot of the moon, its left edge catching the last light
+    if (road.z > .5) {
+      float xc = mix(road.x, road.y, d), w = .004 + .05*d, side = (p.x - xc)/w;
+      vec3 stone = mix(vec3(.46, .40, .37), vec3(.20, .21, .26), smoothstep(0., .9, d));
+      stone *= .82 + .36*fbm(vec2(p.x*70., d*46.));
+      stone *= 1. - .3*smoothstep(.95, 1., fract(pow(d, .55)*16.));                    // joints between the slabs, closer together far away
+      stone += vec3(.42, .30, .19)*smoothstep(.35, 1., -side)*(1. - d*.45);
+      stone *= 1. - .4*smoothstep(.7, 1., side);
+      float far = smoothstep(0., .035, d);
+      c = mix(c, vec3(.03, .04, .06), (1. - smoothstep(1.2, 1.3, side))*step(1., side)*far*.85);   // the shaded flank of the slab
+      c = mix(c, stone, (1. - smoothstep(.95, 1., abs(side)))*far);
+    }
   }
   c += (h(gl_FragCoord.xy + fract(t)) - .5)*.012;          // a little grain keeps the gradients from banding
   gl_FragColor = vec4(c, 1.);
@@ -88,6 +100,13 @@ void main(){
     gl.uniform2f(U("res"), cv.width, cv.height); gl.uniform1f(U("hz"), hz);
     // the moon sits low, just risen: under the constellation on wide screens, beside it on a phone
     gl.uniform3f(U("moon"), narrow ? 0.74 : 0.6, hz + (narrow ? 0.085 : 0.115), narrow ? 0.05 : 0.088);
+    // the road runs from the foot of the moon to the lower right corner (wide screens only: on a phone the text sits there);
+    // the walker (.walker in the page) stands on it, a little over a third of the way toward the viewer
+    const A = 0.6, B = 1.02, S = 0.36, hero = cv.parentElement;
+    gl.uniform3f(U("road"), A, B, narrow ? 0 : 1);
+    hero.style.setProperty("--wx", `${((A + (B - A) * S) * r.width).toFixed(1)}px`);
+    hero.style.setProperty("--wy", `${(hz * (1 - S) * r.height).toFixed(1)}px`);
+    hero.style.setProperty("--wh", `${(r.height * 0.13).toFixed(1)}px`);
     if (still) draw(0);
   };
   fit(); addEventListener("resize", fit);
