@@ -71,19 +71,19 @@ async function boot() {
 function renderWallet() {
   const h = hold, total = h.totalEth;
   $("total").textContent = `${ethf(total)} ETH`;
-  $("totalSub").textContent = h.held.length ? `in ${h.held.length} quiver token${h.held.length > 1 ? "s" : ""}${h.totalUsd != null ? `, about ${usd(h.totalUsd)}` : ""}` : "from the quiver in this wallet";
+  $("totalSub").textContent = h.held.length ? `in ${h.held.length} Chiron token${h.held.length > 1 ? "s" : ""}${h.totalUsd != null ? `, about ${usd(h.totalUsd)}` : ""}` : "from Chiron in this wallet";
   $("freeTxt").textContent = `${ethf(h.eth.free)} ETH free to spend in ${short(me)}. A little is kept aside for gas.`;
   const maxW = Math.max(...h.held.map((x) => Math.max(x.weight, total ? x.eth / total : 0)), 0.0001);
   $("holds").innerHTML = h.held.length ? h.held.map((x) => {
     const mine = total ? x.eth / total : 0;
     return `<div class="hold ${x.member ? "" : "gone"}"><a class="name" href="${pons(x.token)}" target="_blank" rel="noopener">$${esc(x.symbol)}</a>
       <div class="bars"><i style="--w:${((mine / maxW) * 100).toFixed(1)}%"></i><i style="--w:${((x.weight / maxW) * 100).toFixed(1)}%"></i></div>
-      <div class="val">${ethf(x.eth)} ETH<small>${Math.round(mine * 100)}% of yours</small><small>${x.member ? Math.round(x.weight * 100) + "% in the quiver" : "not in the quiver"}</small></div>
-      ${x.member ? "" : `<div class="why">Left the quiver: ${esc(x.why || "it no longer passes the rule")}.</div>`}</div>`;
-  }).join("") : `<p class="mute">Nothing from the quiver in this wallet yet. Name an amount to draw all seven.</p>`;
+      <div class="val">${ethf(x.eth)} ETH<small>${Math.round(mine * 100)}% of yours</small><small>${x.member ? Math.round(x.weight * 100) + "% in Chiron" : "no longer in the seven"}</small></div>
+      ${x.member ? "" : `<div class="why">Left the seven: ${esc(x.why || "it no longer passes the rule")}.</div>`}</div>`;
+  }).join("") : `<p class="mute">Nothing from Chiron in this wallet yet. Name an amount to draw all seven.</p>`;
   $("unpriced").textContent = h.unpriced.length ? `Not counted: ${h.unpriced.map((u) => `$${u.symbol} (${u.why})`).join(", ")}.` : "";
   $("rotateBox").hidden = !h.left;
-  $("rotateTxt").textContent = h.left ? `${h.left} token${h.left > 1 ? "s" : ""} you hold ${h.left > 1 ? "have" : "has"} left the quiver. A rotation sells ${h.left > 1 ? "them" : "it"} and moves the ETH to the slots you are lightest in.` : "";
+  $("rotateTxt").textContent = h.left ? `${h.left} token${h.left > 1 ? "s" : ""} you hold ${h.left > 1 ? "have" : "has"} left the seven. A rotation sells ${h.left > 1 ? "them" : "it"} and moves the ETH to the slots you are lightest in.` : "";
   $("sellBtn").disabled = !h.held.length;
 }
 
@@ -96,7 +96,7 @@ async function loadWallet(fresh = false) {
 // ---------- the buy box: a live preview of the split ----------
 function renderSplit() {
   const v = +$("amount").value, ms = st?.quiver.members || [];
-  if (!ms.length) { $("split").innerHTML = `<li>The quiver is empty right now, so there is nothing to buy.</li>`; return; }
+  if (!ms.length) { $("split").innerHTML = `<li>No token passes the rule right now, so there is nothing to buy.</li>`; return; }
   $("split").innerHTML = ms.map((m) => `<li><span>$${esc(m.symbol)}</span><b>${v > 0 ? ethf(v * m.weight, 5) + " ETH" : Math.round(m.weight * 100) + "%"}</b></li>`).join("");
 }
 $("amount").addEventListener("input", renderSplit);

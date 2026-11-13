@@ -10,7 +10,7 @@ import { curves, curveSellQuote, curveBuyQuote, lc } from "./chain.mjs";
 export const START = 0.1;      // retail size: a paper buy does not move the real curve, so a big book would overstate its own price impact
 export const OPEN_AT = 4;      // the books open once this many slots are filled
 export const BOOKS = {
-  quiver: { name: "The quiver", note: "seven slots, rotated by the rule" },
+  quiver: { name: "Chiron", note: "the seven, rotated by the rule" },
   still: { name: "Never rotated", note: "the opening tokens, held as they were" },
   single: { name: "One token", note: "everything in the busiest one" },
 };
@@ -79,7 +79,7 @@ export async function step(H, members) {
   const leaving = held.some((h) => !h.member && usable(live[lc(h.curve)]));
   if (members.length && (leaving || q.cash >= 0.002)) {
     const p = plan({ action: "rotate", members, held, spare: q.cash });
-    for (const s of p.sells) sell(q, s.token, live, "left the quiver");
+    for (const s of p.sells) sell(q, s.token, live, "left the seven");
     for (const b of p.buys) buy(q, b, b.eth, live, "rotation: filling the lightest slots");
   }
   const t = Date.now();

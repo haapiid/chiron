@@ -90,10 +90,10 @@ export function plan({ action, eth = 0, members = [], held = [], spare = 0 }, R 
 
   if (action === "sell") {
     out.sells = held.filter((h) => h.eth > 0).map(sellAll);
-    out.note = out.sells.length ? "Every quiver token in the wallet goes back to ETH." : "There is nothing from the quiver in this wallet.";
+    out.note = out.sells.length ? "Every Chiron token in the wallet goes back to ETH." : "There is nothing from Chiron in this wallet.";
     return out;
   }
-  if (!members.length) { out.note = "The quiver is empty right now: no token passes the rule."; return out; }
+  if (!members.length) { out.note = "No token passes the rule right now, so there is nothing to buy."; return out; }
 
   if (action === "buy") {
     if (!(eth > 0)) { out.note = "Enter how much ETH to spend."; return out; }
@@ -108,14 +108,14 @@ export function plan({ action, eth = 0, members = [], held = [], spare = 0 }, R 
     out.sells = leaving.map(sellAll);
     // 2% is held back from the sale: the price can move between the plan and the last signature
     const fresh = leaving.reduce((s, h) => s + h.eth, 0) * 0.98 + spare;
-    if (!(fresh > 0)) { out.note = "Nothing you hold has left the quiver. No rotation needed."; return out; }
+    if (!(fresh > 0)) { out.note = "Nothing you hold has left the seven. No rotation needed."; return out; }
     const have = Object.fromEntries(held.filter((h) => isMember.has(h.token)).map((h) => [h.token, h.eth]));
     const total = Object.values(have).reduce((s, x) => s + x, 0) + fresh;
     const gaps = members.map((m) => Math.max(0, total * m.weight - (have[m.token] || 0)));
     const gapSum = gaps.reduce((s, x) => s + x, 0);
     if (gapSum > 0) out.buys = members.map((m, i) => buy(m, (fresh * gaps[i]) / gapSum)).filter((b) => b.eth >= R.minBuyEth);
     out.note = out.sells.length
-      ? `${out.sells.length} token${out.sells.length > 1 ? "s" : ""} left the quiver. They are sold and the ETH goes to the members you are lightest in.`
+      ? `${out.sells.length} token${out.sells.length > 1 ? "s" : ""} left the seven. They are sold and the ETH goes to the members you are lightest in.`
       : "Free ETH goes to the members furthest under their share.";
     return out;
   }
