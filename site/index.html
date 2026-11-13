@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chiron: seven memecoins, one draw</title>
+<meta name="description" content="Chiron keeps a quiver of seven Pons memecoins that pass its rug scan and still trade. Choose an amount and your wallet buys all seven, split by a rule you can read.">
+<meta name="theme-color" content="#060718">
+<meta property="og:title" content="Chiron: seven memecoins, one draw">
+<meta property="og:description" content="A quiver of seven Pons memecoins on Robinhood Chain. Your wallet signs every buy and every sale.">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Onest:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/css/chiron.css">
+</head>
+<body>
+<header class="nav" id="nav"><div class="wrap">
+  <a class="brand" href="/" aria-label="Chiron, home"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M11 5q12 11 0 22" fill="none" stroke="#eeebf7" stroke-width="2" stroke-linecap="round"/><path d="M11 5v22" stroke="#eeebf7" stroke-opacity=".45"/><path d="M5 16h19" stroke="#ffb155" stroke-width="2" stroke-linecap="round"/><path d="M28 16l-7-4 1.8 4-1.8 4z" fill="#ffb155"/></svg>Chiron</a>
+  <nav aria-label="Sections"><a href="#quiver" data-sec="quiver">The seven</a><a href="#rule" data-sec="rule">The rule</a><a href="#record" data-sec="record">The record</a><a href="#limits" data-sec="limits">Limits</a></nav>
+  <button class="ca" id="ca" hidden><span id="caText"></span></button>
+  <a class="btn fly sm" href="/app">Open the quiver</a>
+</div></header>
+
+<section class="hero" id="top">
+  <canvas id="sky" aria-hidden="true"></canvas>
+  <div class="stars" id="stars"></div>
+  <div class="wrap hero-in">
+    <h1 class="rise"><span>Seven memecoins.</span><span>One draw.</span></h1>
+    <p class="lede">Chiron keeps a quiver of seven Pons memecoins that pass its rug scan and still trade. You choose an amount, and <b>your wallet buys all seven</b>, split by a rule you can read.</p>
+    <div class="cta"><a class="btn fly" id="heroCta" href="/app">Open the quiver</a><a class="link" href="#rule">How the seven are picked</a></div>
+  </div>
+  <div class="wrap"><div class="facts" id="facts">
+    <div><b id="fSlots">–</b>slots filled</div>
+    <div><b id="fNext">–</b>next check of the seven</div>
+    <div><b id="fVol">–</b>traded on Pons in 24 h</div>
+  </div></div>
+</section>
+
+<main>
+<section class="sec" id="quiver"><div class="wrap">
+  <div class="sec-head">
+    <h2>The seven, right now.</h2>
+    <p class="lede">Each row is one slot. The longer the arrow, the larger that token's share of every buy. A token keeps its slot while it stays on its Pons curve, passes the rug scan and keeps trading.</p>
+  </div>
+  <div class="arrows" id="arrows" aria-live="polite"></div>
+  <h3 class="log-h">Who came and went</h3>
+  <ul class="log two-col" id="log"></ul>
+</div></section>
+
+<section class="sec" id="rule"><div class="wrap">
+  <div class="sec-head">
+    <h2>A rule you can read in a minute.</h2>
+    <p class="lede">No one picks the seven by hand. Code checks every member and every candidate each half hour, and the same rule moves the paper books further down this page.</p>
+  </div>
+  <div class="rule-grid">
+    <div><h3>To get a slot</h3><ul>
+      <li>At least <b><span data-rule="minVolEth">0.5</span> ETH</b> traded on its Pons curve in 24 hours</li>
+      <li>Launched more than <b><span data-rule="minAgeH">6</span> hours</b> ago</li>
+      <li>Still on its curve, not graduated to Uniswap</li>
+      <li>Rug risk under <b><span data-rule="maxRisk">30</span> of 100</b>, with no high flag in the scan</li>
+      <li>Curve fee plus creator tax of at most <b><span data-rule="maxCostBps">5</span>%</b> per trade</li>
+    </ul></div>
+    <div><h3>To lose it</h3><ul>
+      <li>It graduates off its Pons curve</li>
+      <li>It fails the rug scan on a later check</li>
+      <li>Its 24 hour volume falls under <b><span data-rule="keepVolEth">0.2</span> ETH</b></li>
+      <li>The busiest token that passes takes the free slot</li>
+    </ul></div>
+    <div><h3>How a buy is split</h3><ul>
+      <li>Shares follow the <b>square root of 24 hour volume</b>, so busy tokens get more without swallowing the buy</li>
+      <li>No token takes more than <b><span data-rule="capWeight">25</span>%</b></li>
+      <li>Buys under <b><span data-rule="minBuyEth">0.0002</span> ETH</b> are skipped</li>
+    </ul></div>
+  </div>
+  <ol class="steps">
+    <li><b>Sign in</b>One signed message proves the wallet is yours. It sends nothing and costs no gas.</li>
+    <li><b>Buy all seven</b>Enter an amount of ETH. Chiron splits it by share, and your wallet signs one buy per token.</li>
+    <li><b>Rotate</b>When a token leaves the quiver, sell it and move that ETH to the slots you are lightest in.</li>
+    <li><b>Sell</b>One plan sells every quiver token back to ETH, whenever you choose.</li>
+  </ol>
+</div></section>
+
+<section class="sec" id="record"><div class="wrap">
+  <div class="sec-head">
+    <h2>Does rotating help? Watch.</h2>
+    <p class="lede">Three paper books started with the same ETH. If the rotated quiver cannot beat the one that never rotates, or the one that just buys the busiest token, you will see it here.</p>
+  </div>
+  <div class="books" id="books"></div>
+  <div class="chart"><svg id="eq" viewBox="0 0 800 280" preserveAspectRatio="none" role="img" aria-label="Return of the three paper books over time"></svg></div>
+  <p class="chart-note" id="recNote"></p>
+</div></section>
+
+<section class="sec" id="limits"><div class="wrap">
+  <div class="sec-head"><h2>What Chiron is not.</h2><p class="lede">Read these before you sign anything.</p></div>
+  <div class="limits">
+    <p><b>Not custody, not a fund.</b>Chiron has no key to your wallet and pools nothing. It builds transactions, and your wallet signs or refuses each one.</p>
+    <p><b>Not a promise.</b>Memecoins can go to zero, all seven at once. The rug scan catches common traps, not every one.</p>
+    <p><b>Every trade pays the curve.</b>Pons takes 1% and each token's creator takes a tax on every buy and every sale. Buying and selling straight back loses several percent.</p>
+    <p><b>Seven signatures, not one.</b>Each token is its own transaction, so a full buy pays gas seven times.</p>
+    <p><b>Pons curve tokens only.</b>A token that graduates to Uniswap leaves the quiver and cannot be sold from here.</p>
+    <p><b>Not advice.</b>Not affiliated with Robinhood, Pons or Uniswap.</p>
+  </div>
+</div></section>
+
+<section class="closing"><div class="wrap">
+  <h2>Draw once. Hold seven.</h2>
+  <div class="cta"><a class="btn fly" href="/app">Open the quiver</a><a class="link" href="#quiver">See the seven first</a></div>
+</div></section>
+</main>
+
+<footer><div class="wrap"><span>Chiron, a quiver of seven memecoins on Robinhood Chain. Your wallet signs every trade.</span><span id="health"></span></div></footer>
+<script src="/js/common.js"></script>
+<script src="/js/sky.js"></script>
+<script src="/js/landing.js"></script>
+</body>
+</html>

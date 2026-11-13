@@ -1,0 +1,14 @@
+{
+  "name": "chiron",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server/server.mjs",
+    "test": "node server/test.mjs"
+  },
+  "dependencies": {
+    "ethers": "^6.13.0"
+  }
+}
