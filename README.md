@@ -28,6 +28,9 @@ API: `/api/state` (public), `/api/token`, `/api/auth/nonce|verify|logout`, `/api
 
 The first start reads 24 hours of Pons trades from the public RPC, which takes a while; the quiver fills once that is done. State lives in `data/` (not in git).
 
+## Logo
+`logo/` holds the logo, cut from the owner's `src/logo-chiron.jpg`: `chiron.png` (transparent, full size), `chiron-128.png` (page headers) and the tab icons (`favicon-32/64.png`, `apple-touch-icon.png`: the mark on a dark tile, because a white mark alone vanishes on a light browser tab). The server serves the folder at `/logo/`.
+
 ## Site
 Static HTML/CSS/JS in `site/`, no build step, in the same visual family as ARCHY (thin Jost, IBM Plex Mono, navy / ivory / gold). The hero is two canvases: `js/dusk.js` (a WebGL dusk sea: sky, turning moon from `img/moon.jpg`, ridges, mist, mirrored water) and `js/sky.js` (Sagittarius from its real star positions, seven stars carrying the live members, arrows of light). Each chapter shows a picture when its file exists in `site/img/` (`ch-seven`, `ch-rule`, `ch-record`, `ch-limits`, as webp/jpg/png); without one the chapter is text only. Everything animated has a reduced-motion still.
 

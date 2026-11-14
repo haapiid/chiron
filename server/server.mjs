@@ -16,6 +16,7 @@ import { rpcHealth } from "./rpc.mjs";
 
 const PORT = +(process.env.PORT || 5496), HOST = process.env.HOST || "127.0.0.1";
 const DATA = fileURLToPath(new URL("../data/", import.meta.url)), SITE = fileURLToPath(new URL("../site/", import.meta.url));
+const LOGO = fileURLToPath(new URL("../logo/", import.meta.url));   // the logo files, served at /logo/
 const FILE = path.join(DATA, "state.json");
 fs.mkdirSync(DATA, { recursive: true });
 const DRAW_EVERY = 30 * 60_000;
@@ -259,9 +260,10 @@ http.createServer(async (req, res) => {
     try { return await api(req, res, u.pathname); }
     catch (e) { return send(res, 400, { error: e.shortMessage || e.message || "Something went wrong." }); }
   }
-  const rel = ROUTES[u.pathname] || u.pathname.slice(1);
-  const f = path.normalize(path.join(SITE, rel));
-  if (!f.startsWith(SITE) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { res.writeHead(404, { "content-type": "text/plain" }); return res.end("not found"); }
+  const logo = u.pathname.startsWith("/logo/"), base = logo ? LOGO : SITE;
+  const rel = logo ? u.pathname.slice(6) : ROUTES[u.pathname] || u.pathname.slice(1);
+  const f = path.normalize(path.join(base, rel));
+  if (!f.startsWith(base) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { res.writeHead(404, { "content-type": "text/plain" }); return res.end("not found"); }
   const ext = path.extname(f), mtime = fs.statSync(f).mtime.toUTCString();
   // pages, styles and scripts are checked on every load, so a new stylesheet never meets an old page
   if (req.headers["if-modified-since"] === mtime) { res.writeHead(304, { "cache-control": "no-cache", "last-modified": mtime }); return res.end(); }
