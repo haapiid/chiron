@@ -69,12 +69,17 @@ if nginx -t 2>/dev/null; then systemctl reload nginx; echo "   nginx reloaded"
 else rm -f /etc/nginx/sites-enabled/chiron; echo "   nginx refused the new site, so it was taken out again. Other sites are untouched. See: nginx -t"; exit 1; fi
 
 echo "== 6/6 HTTPS"
-if [ -n "$EMAIL" ]; then
-  command -v certbot >/dev/null 2>&1 || apt-get install -y -qq certbot python3-certbot-nginx >/dev/null
-  if certbot --nginx -d "$DOMAIN" --redirect --non-interactive --agree-tos -m "$EMAIL"; then echo "   https://$DOMAIN is live"
-  else echo "   The certificate was not issued. Point $DOMAIN (A record) at this server, then run: certbot --nginx -d $DOMAIN --redirect"; fi
+# with an email a Let's Encrypt account is registered; without one, the account this server already has is used
+if [ -n "$EMAIL" ]; then WHO="--agree-tos -m $EMAIL"
+elif ls /etc/letsencrypt/accounts/*/directory/* >/dev/null 2>&1; then WHO=""
+else WHO="none"; fi
+if [ "$WHO" = "none" ]; then
+  echo "   skipped: no email given and this server has no Let's Encrypt account yet. Run: certbot --nginx -d $DOMAIN --redirect"
 else
-  echo "   skipped (no email given). Once $DOMAIN points here: certbot --nginx -d $DOMAIN --redirect"
+  command -v certbot >/dev/null 2>&1 || apt-get install -y -qq certbot python3-certbot-nginx >/dev/null
+  # shellcheck disable=SC2086
+  if certbot --nginx -d "$DOMAIN" --redirect --non-interactive $WHO; then echo "   https://$DOMAIN is live"
+  else echo "   The certificate was not issued. Point $DOMAIN (A record) at this server, then run: certbot --nginx -d $DOMAIN --redirect"; fi
 fi
 
 echo
