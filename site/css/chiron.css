@@ -316,3 +316,11 @@ body.app main>section{padding:0;border:0}
 .copy{background:none;border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer;font:400 10px var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--text2);white-space:nowrap;transition:border-color .2s,color .2s}
 .copy:hover{border-color:var(--gold);color:var(--gold2)}
 @media (max-width:1020px){.open-row{grid-template-columns:1fr;gap:6px}.open-v{margin-top:6px}}
+
+/* the X account */
+.nav-x{display:inline-grid;place-items:center;flex:none;width:40px;height:40px;border:1px solid var(--line2);border-radius:50%;color:var(--text);transition:border-color .25s,color .25s}
+.nav-x:hover{border-color:var(--gold);color:var(--gold2)}
+.nav-x svg{width:14px;height:14px}
+.foot-x{color:var(--text2);text-decoration:none;border-bottom:1px solid var(--line2)}
+.foot-x:hover{color:var(--gold2);border-color:var(--gold)}
+@media (max-width:900px){.nav .nav-x{margin-left:auto}.nav .nav-x~.btn{margin-left:0}}
