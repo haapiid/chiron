@@ -28,6 +28,16 @@ API: `/api/state` (public), `/api/token`, `/api/auth/nonce|verify|logout`, `/api
 
 The first start reads 24 hours of Pons trades from the public RPC, which takes a while; the quiver fills once that is done. State lives in `data/` (not in git).
 
+## Deploy
+One Node process serves the site and the API on `127.0.0.1:5496`; nginx sits in front and adds HTTPS (the sign-in cookie is `Secure` on any host that is not localhost, so the app needs HTTPS to work).
+
+On an Ubuntu VPS, as root, with the domain already pointed at the server:
+```
+curl -fsSL https://raw.githubusercontent.com/haapiid/chiron/master/deploy/install.sh -o install.sh
+sh install.sh <domain> <email for the certificate>
+```
+`deploy/install.sh` installs Node 22 if needed, clones the repo to `/opt/chiron`, runs it as the systemd service `chiron` under its own user (code read-only, only `data/` writable), adds its own nginx site and gets the certificate. It refuses to install if port 5496 is taken and takes its nginx site out again if `nginx -t` fails, so other apps on the server are left alone. Settings live in `/etc/chiron.env`. Run it again to update. The script has not been run on a server yet.
+
 ## Logo
 `logo/` holds the logo, cut from the owner's `src/logo-chiron.jpg`: `chiron.png` (transparent, full size), `chiron-128.png` (page headers) and the tab icons (`favicon-32/64.png`, `apple-touch-icon.png`: the mark on a dark tile, because a white mark alone vanishes on a light browser tab). The server serves the folder at `/logo/`.
 

@@ -1,0 +1,36 @@
+# systemd unit for CHIRON (site + API in one Node process, behind nginx).
+# Installed by deploy/install.sh. By hand: cp deploy/chiron.service /etc/systemd/system/ && systemctl daemon-reload && systemctl enable --now chiron
+[Unit]
+Description=CHIRON: seven Pons memecoins, site and API
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=chiron
+Group=chiron
+WorkingDirectory=/opt/chiron
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT=5496
+# RPC_URLS, CHIRON_SHARE, STUDIO_KEY, BURN_SECRET live outside the repo; all optional
+EnvironmentFile=-/etc/chiron.env
+ExecStart=/usr/bin/node server/server.mjs
+Restart=on-failure
+RestartSec=3
+
+# Hardening: the code is read-only; only data/ (state, Pons cache, studio secrets) is writable.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ReadWritePaths=/opt/chiron/data
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+
+[Install]
+WantedBy=multi-user.target
