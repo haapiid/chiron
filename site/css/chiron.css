@@ -303,3 +303,16 @@ body.app main>section{padding:0;border:0}
 @media (max-width:1180px){.nav .ca{display:none}}
 @media (max-width:900px){.nav .buy-own{display:none}}
 .cta .btn.buy-own{border-color:var(--line2)}
+
+/* ---------- in the open: wallets and token ---------- */
+.open{border-top:1px solid var(--line)}
+.open-row{display:grid;grid-template-columns:minmax(150px,220px) minmax(0,1fr) auto;gap:8px 32px;align-items:center;padding:22px 0;border-bottom:1px solid var(--line)}
+.open-row h3{font:400 11px var(--sans);letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
+.open-row p{color:var(--text2);font-size:15px}
+.open-v{display:flex;align-items:center;gap:14px;min-width:0}
+.open-v a{font-size:13px;color:var(--text);text-decoration:none;border-bottom:1px solid var(--line2);padding-bottom:2px;overflow-wrap:anywhere;transition:border-color .2s,color .2s}
+.open-v a:hover{border-color:var(--gold);color:var(--gold2)}
+.open-v .mono{font-size:13px}
+.copy{background:none;border:1px solid var(--line);border-radius:999px;padding:5px 12px;cursor:pointer;font:400 10px var(--sans);letter-spacing:.18em;text-transform:uppercase;color:var(--text2);white-space:nowrap;transition:border-color .2s,color .2s}
+.copy:hover{border-color:var(--gold);color:var(--gold2)}
+@media (max-width:1020px){.open-row{grid-template-columns:1fr;gap:6px}.open-v{margin-top:6px}}

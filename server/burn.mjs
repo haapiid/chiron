@@ -30,6 +30,13 @@ export const EXPLORER = "https://explorer.mainnet.chain.robinhood.com";
 const FACTORY = "0x7eD598BcEf8bd9Edd8C97A195C6d13f40801EC7e", HOOK = "0xE5e702641Ea86F4ae6cC3cDaeD2B886f976Be044";
 const ROUTER = "0x8876789976dEcBfCbBbe364623C63652db8C0904", POOL_MANAGER = "0x8366a39CC670B4001A1121B8F6A443A643e40951";
 export const DEAD = "0x000000000000000000000000000000000000dEaD";
+// The two wallets behind CHIRON, both public. The creator wallet launches $CHIRON on Pons (its creator fee lands there);
+// the buyback wallet is the only one whose key /studio accepts. Override with CREATOR_WALLET / BUYBACK_WALLET.
+const addr = (v, d) => { try { return ethers.getAddress(String(v || d).trim()); } catch { return ethers.getAddress(d); } };
+export const WALLETS = {
+  creator: addr(process.env.CREATOR_WALLET, "0x9d2ee7ea05884ff7aa64992fb45631fe16760aed"),
+  buyback: addr(process.env.BUYBACK_WALLET, "0xdbdd5a942904acf54b231fa304fee5e8aa92b4f6"),
+};
 const POOL_CREATED = 2, BPS = 10_000n, SLIPPAGE_BPS = 500n, GAS_ROOM = ethers.parseEther("0.0008");
 const MAX_USD = Number(process.env.BURN_MAX_USD || 100), DAY_USD = Number(process.env.BURN_DAY_USD || 300);
 const FACTORY_ABI = [
@@ -116,7 +123,8 @@ export async function saveToken({ ca, symbol }) {
   }
   if (symbol !== undefined) { const s = String(symbol).trim().replace(/^\$/, "").toUpperCase(); if (!/^[A-Z0-9]{1,12}$/.test(s)) throw new Error("Ticker: 1 to 12 letters or digits."); out.symbol = s; }
   let warn = null;
-  if (out.ca) { const l = await again(() => launchOf(out.ca)).catch(() => null); if (!l) warn = "Saved, but the Pons factory has no launch for this address. Check the CA."; }
+  if (out.ca) { const l = await again(() => launchOf(out.ca)).catch(() => null); if (!l) warn = "Saved, but the Pons factory has no launch for this address. Check the CA.";
+    else if (![l.deployer, l.feeTo].some((a) => String(a).toLowerCase() === WALLETS.creator.toLowerCase())) warn = `Saved, but this token was not launched by the creator wallet ${WALLETS.creator} (Pons names ${l.deployer}). Check the CA.`; }
   write("token.json", out); log("info", `Token set: ${out.ca || "(none)"} $${out.symbol}`); cache = null;
   return { config: out, warn };
 }
@@ -125,6 +133,8 @@ export async function saveToken({ ca, symbol }) {
 const kdf = (salt) => crypto.scryptSync(SECRET, salt, 32);
 export function saveKey(pk) {
   let w; try { w = new ethers.Wallet(String(pk).trim()); } catch { throw new Error("That is not a valid private key."); }
+  // a key for any other wallet is refused, so a wrong paste can never put the main wallet's key on the server
+  if (w.address !== WALLETS.buyback) throw new Error(`That key belongs to ${w.address}, not to the buyback wallet ${WALLETS.buyback}. Nothing was saved.`);
   const salt = crypto.randomBytes(16), iv = crypto.randomBytes(12), c = crypto.createCipheriv("aes-256-gcm", kdf(salt), iv);
   const data = Buffer.concat([c.update(w.privateKey, "utf8"), c.final()]);
   write("wallet.enc", { address: w.address, salt: salt.toString("hex"), iv: iv.toString("hex"), tag: c.getAuthTag().toString("hex"), data: data.toString("hex") });
@@ -144,7 +154,7 @@ const poolId = (token, k) => ethers.keccak256(coder.encode(["address", "address"
 async function launchOf(token) {
   const l = await new ethers.Contract(FACTORY, FACTORY_ABI, provider).getLaunchedToken(token);
   if (!l?.exists) return null;
-  return { curve: l.curve, pairToken: l.pairToken, phase: Number(l.phase), creatorTaxBps: BigInt(l.creatorTaxBps), pool: { fee: Number(l.poolFee), tickSpacing: Number(l.tickSpacing), hooks: HOOK } };
+  return { deployer: l.deployer, feeTo: l.creatorFeeRecipient, curve: l.curve, pairToken: l.pairToken, phase: Number(l.phase), creatorTaxBps: BigInt(l.creatorTaxBps), pool: { fee: Number(l.poolFee), tickSpacing: Number(l.tickSpacing), hooks: HOOK } };
 }
 const minOut = (expected, feeBps = 0n) => (expected * (BPS - feeBps) * (BPS - SLIPPAGE_BPS)) / (BPS * BPS);
 async function quoteCurve(curveAddr, quoteIn, recipient) {

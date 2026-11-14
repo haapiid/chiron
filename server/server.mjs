@@ -6,7 +6,7 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { ethers } from "ethers";
-import { ethPrice, lc, multicall, curves, factoryI, PONS_FACTORY, CHAIN_ID, EXPLORER } from "./chain.mjs";
+import { ethPrice, lc, multicall, curves, factoryI, provider, PONS_FACTORY, CHAIN_ID, EXPLORER } from "./chain.mjs";
 import * as memes from "./memes.mjs";
 import * as record from "./record.mjs";
 import { RULES, verdict, draw, plan } from "./quiver.mjs";
@@ -55,11 +55,15 @@ async function ownToken() {
   return v;
 }
 
+// the buyback wallet's balance, shown on the site: what is left to spend on buybacks
+let buybackEth = null;
+async function readWallets() { try { buybackEth = +(+ethers.formatEther(await provider.getBalance(T.WALLETS.buyback))).toFixed(5); note("wallets"); } catch (e) { note("wallets", e); } }
+
 // ---------- loops ----------
 let eth = S.eth || null, polledAt = 0;
 async function minute() {
   try { await memes.poll(); polledAt = Date.now(); note("pons"); } catch (e) { note("pons", e); }
-  ownToken();
+  ownToken(); readWallets();
   try { eth = await ethPrice(); S.eth = eth; S.ethAt = Date.now(); note("price"); dirty = true; } catch (e) { note("price", e); }
 }
 
@@ -92,7 +96,7 @@ async function books() {
 }
 
 (async () => {
-  ownToken();                                               // its own token is looked up at once, not after the first long read of Pons
+  ownToken(); readWallets();                                // looked up at once, not after the first long read of Pons
   await minute();
   setInterval(minute, 60_000);
   await redraw(); setInterval(redraw, DRAW_EVERY);
@@ -143,7 +147,7 @@ const chapterArt = () => { try { return fs.readdirSync(path.join(SITE, "img")).f
 function publicState() {
   const q = S.quiver;
   return {
-    now: Date.now(), chainId: CHAIN_ID, explorer: EXPLORER, ethUsd: eth?.mid || null, rules: RULES, art: chapterArt(),
+    now: Date.now(), chainId: CHAIN_ID, explorer: EXPLORER, ethUsd: eth?.mid || null, rules: RULES, art: chapterArt(), wallets: { creator: T.WALLETS.creator, buyback: T.WALLETS.buyback, buybackEth },
     own: ownCache.v && { token: ownCache.v.token, symbol: ownCache.v.symbol, share: ownCache.v.share, tradable: ownCache.v.tradable },
     quiver: {
       at: q.at, next: q.at ? q.at + DRAW_EVERY : null, size: RULES.size,
