@@ -370,3 +370,9 @@ body.app main>section{padding:0;border:0}
 .scroll table:has(thead) td.r,.scroll table:has(thead) th.r{padding-right:20px}
 table td:first-child{white-space:nowrap}
 @media (max-width:520px){.hold .why{order:4}}
+/* an open slot: its note may wrap, and on narrow screens it takes the columns to its right, so it can never widen the page */
+.arrow.empty .num small{white-space:normal}
+@media (max-width:1020px){.arrow.empty>span:nth-child(3){display:none}.arrow.empty .num{grid-column:3/-1}}
+/* nothing may make the page wider than the screen */
+html{overflow-x:hidden}
+.arrows,.log,.open,.books,.chart,.rule-grid,.steps,.limits{min-width:0;max-width:100%}
