@@ -324,3 +324,49 @@ body.app main>section{padding:0;border:0}
 .foot-x{color:var(--text2);text-decoration:none;border-bottom:1px solid var(--line2)}
 .foot-x:hover{color:var(--gold2);border-color:var(--gold)}
 @media (max-width:900px){.nav .nav-x{margin-left:auto}.nav .nav-x~.btn{margin-left:0}}
+
+/* ---------- phones ---------- */
+@media (max-width:760px){
+  /* the three facts sit under the text instead of floating over it */
+  .hero-in{padding-bottom:30px}
+  .facts{position:relative;left:auto;right:auto;bottom:auto;padding:0 0 34px}
+  .facts .wrap{padding-top:22px;border-top:1px solid var(--line);gap:18px 34px}
+  .facts .wrap::before{content:none}
+}
+@media (max-width:520px){
+  /* header: logo, X and one button must fit in 360 px */
+  .nav .wrap,.nav.solid .wrap{gap:8px;height:62px}
+  .brand{gap:8px;font-size:14px;letter-spacing:.2em}
+  .brand img{width:30px;height:30px}
+  .nav-x{width:34px;height:34px}
+  .nav .btn.sm{padding:9px 13px;font-size:10px;letter-spacing:.12em}
+  .nav .btn.fly::after{display:none}
+  h2{font-size:32px}
+  .hero .cta{gap:18px 24px}
+  .facts b{font-size:25px}
+  /* app */
+  .app-main{padding-top:calc(62px + 30px)}
+  .tabs{overflow-x:auto;scrollbar-width:none;margin:24px 0 28px}
+  .tabs::-webkit-scrollbar{display:none}
+  .tabs button{white-space:nowrap;margin-right:20px;letter-spacing:.16em}
+  .kpis b{font-size:24px}
+  .kpis div{padding:14px 16px}
+  .panel{border-radius:16px}
+  .who .btn{margin-left:0!important}
+  .hold{grid-template-columns:minmax(0,1fr) auto;gap:6px 14px}
+  .hold .bars{grid-column:1/-1;order:3}
+  .steplist li{grid-template-columns:26px minmax(0,1fr)}
+  .steplist .st{grid-column:2;text-align:left}
+  .amount input{height:54px;font-size:26px}
+  .actions{gap:14px 18px}
+  /* wide tables scroll inside their own box instead of squeezing */
+  .scroll table:has(thead){min-width:560px}
+  .book .ret{font-size:44px}
+  .rule-grid>div{padding:22px}
+  .steps{gap:30px 18px}
+  .closing h2{font-size:38px}
+}
+/* tables: a readable gap after right-aligned figures, and the time on one line */
+.scroll table:has(thead) td.r,.scroll table:has(thead) th.r{padding-right:20px}
+table td:first-child{white-space:nowrap}
+@media (max-width:520px){.hold .why{order:4}}

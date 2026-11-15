@@ -33,6 +33,7 @@ function renderOpen(st) {
 document.addEventListener("click", (e) => { const a = e.target.closest?.("[data-copy]"); if (a) copy(a.dataset.copy); });
 
 function render(st) {
+  lastState = st;
   const q = st.quiver;
   sky.setMembers([...q.members].sort((a, b) => b.weight - a.weight).map((m) => ({ symbol: m.symbol, weight: m.weight, href: pons(m.token) })));
   $("fSlots").textContent = `${q.members.length} of ${q.size}`;
@@ -49,6 +50,9 @@ function render(st) {
   art(st.art || []);
 }
 
+// a turned phone or a resized window redraws the chart and the rest at the new size
+let lastState = null, resizing = 0;
+addEventListener("resize", () => { clearTimeout(resizing); resizing = setTimeout(() => lastState && render(lastState), 250); });
 async function tick() { try { token = await api("/api/token").catch(() => token); render(await api("/api/state")); } catch { $("health").textContent = "server not answering, retrying"; } }
 tick(); setInterval(tick, 30_000);
 loadToken();

@@ -11,6 +11,7 @@ function show(tab) {
   document.querySelectorAll("[data-pane]").forEach((p) => (p.hidden = p.dataset.pane !== tab));
   document.querySelectorAll("[data-tab]").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === tab)));
   if (location.hash.slice(1) !== tab) history.replaceState(null, "", "#" + tab);
+  if (typeof st !== "undefined" && st) renderState();          // a chart drawn while its tab was hidden has no size yet
 }
 document.querySelectorAll("[data-tab]").forEach((b) => (b.onclick = () => show(b.dataset.tab)));
 addEventListener("hashchange", () => show(location.hash.slice(1)));
@@ -33,6 +34,8 @@ function renderState() {
   $("health").textContent = errs.length ? `Chain reads are slow right now (${errs.join(", ")}).` : `Block ${Number(st.health.block).toLocaleString("en-US")}. The seven were last checked ${ago(q.at)}.`;
   renderSplit();
 }
+let resizing = 0;
+addEventListener("resize", () => { clearTimeout(resizing); resizing = setTimeout(() => st && renderState(), 250); });
 async function tick() { try { st = await api("/api/state"); renderState(); } catch { $("health").textContent = "The server is not answering. Retrying."; } }
 tick(); setInterval(tick, 30_000);
 loadToken();

@@ -68,6 +68,10 @@ function renderLog(el, st, n = 8) {
 
 /** a line chart; series = [{ c: color, pts: [[t, v], ...] }], with an optional dashed base line */
 function lineChart(svg, series, { w = 800, h = 280, pad = 30, base = null, fmt = (v) => v.toFixed(0), empty = "collecting data" } = {}) {
+  // the drawing takes the box's real size, so labels keep their size and shape on a phone as on a desktop
+  const box = svg.getBoundingClientRect();
+  if (box.width > 40 && box.height > 40) { w = Math.round(box.width); h = Math.round(box.height); pad = w < 480 ? 22 : pad; }
+  svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
   const all = series.flatMap((s) => s.pts);
   if (all.length < 2) { svg.innerHTML = `<text x="${w / 2}" y="${h / 2}" text-anchor="middle" font-family="IBM Plex Mono,monospace" font-size="15" fill="#8d93a0">${esc(empty)}</text>`; return; }
   const t0 = Math.min(...all.map((p) => p[0])), t1 = Math.max(...all.map((p) => p[0]));

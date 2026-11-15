@@ -99,7 +99,7 @@ void main(){
     const narrow = r.width < 760, hz = narrow ? 0.4 : 0.36;
     gl.uniform2f(U("res"), cv.width, cv.height); gl.uniform1f(U("hz"), hz);
     // the moon sits low, just risen: under the constellation on wide screens, beside it on a phone
-    gl.uniform3f(U("moon"), narrow ? 0.74 : 0.6, hz + (narrow ? 0.085 : 0.115), narrow ? 0.05 : 0.088);
+    gl.uniform3f(U("moon"), narrow ? 0.87 : 0.6, hz + (narrow ? 0.09 : 0.115), narrow ? 0.042 : 0.088);   // on a phone: small, to the right of the headline, clear of the text
     // the road runs from the foot of the moon almost straight toward the viewer (wide screens only: on a phone the text sits there);
     // the walker (.walker in the page) stands on it with his back to us, two fifths of the way down
     const A = 0.6, B = 0.665, S = 0.4, hero = cv.parentElement;
