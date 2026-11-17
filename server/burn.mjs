@@ -35,8 +35,8 @@ export const DEAD = "0x000000000000000000000000000000000000dEaD";
 // BUYBACK_WALLET; the first one that was named had its key exposed and is not used.) Override with CREATOR_WALLET / BUYBACK_WALLET.
 const addr = (v, d) => { try { return ethers.getAddress(String(v || d).trim()); } catch { return ethers.getAddress(d); } };
 export const WALLETS = {
-  creator: addr(process.env.CREATOR_WALLET, "0x9d2ee7ea05884ff7aa64992fb45631fe16760aed"),
-  buyback: addr(process.env.BUYBACK_WALLET || process.env.CREATOR_WALLET, "0x9d2ee7ea05884ff7aa64992fb45631fe16760aed"),
+  creator: addr(process.env.CREATOR_WALLET, "0x3d4ad6543a07620072b252130fef0ae94a494798"),
+  buyback: addr(process.env.BUYBACK_WALLET || process.env.CREATOR_WALLET, "0x3d4ad6543a07620072b252130fef0ae94a494798"),
 };
 const POOL_CREATED = 2, BPS = 10_000n, SLIPPAGE_BPS = 500n, GAS_ROOM = ethers.parseEther("0.0008");
 const MAX_USD = Number(process.env.BURN_MAX_USD || 100), DAY_USD = Number(process.env.BURN_DAY_USD || 300);
