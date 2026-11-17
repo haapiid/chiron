@@ -30,12 +30,13 @@ export const EXPLORER = "https://explorer.mainnet.chain.robinhood.com";
 const FACTORY = "0x7eD598BcEf8bd9Edd8C97A195C6d13f40801EC7e", HOOK = "0xE5e702641Ea86F4ae6cC3cDaeD2B886f976Be044";
 const ROUTER = "0x8876789976dEcBfCbBbe364623C63652db8C0904", POOL_MANAGER = "0x8366a39CC670B4001A1121B8F6A443A643e40951";
 export const DEAD = "0x000000000000000000000000000000000000dEaD";
-// The two wallets behind CHIRON, both public. The creator wallet launches $CHIRON on Pons (its creator fee lands there);
-// the buyback wallet is the only one whose key /studio accepts. Override with CREATOR_WALLET / BUYBACK_WALLET.
+// The wallet behind CHIRON, public. The creator (developer) wallet launches $CHIRON on Pons and its creator fee lands there.
+// It is also the buyback wallet: the only wallet whose key /studio accepts. (A separate buyback wallet can be named with
+// BUYBACK_WALLET; the first one that was named had its key exposed and is not used.) Override with CREATOR_WALLET / BUYBACK_WALLET.
 const addr = (v, d) => { try { return ethers.getAddress(String(v || d).trim()); } catch { return ethers.getAddress(d); } };
 export const WALLETS = {
   creator: addr(process.env.CREATOR_WALLET, "0x9d2ee7ea05884ff7aa64992fb45631fe16760aed"),
-  buyback: addr(process.env.BUYBACK_WALLET, "0xdbdd5a942904acf54b231fa304fee5e8aa92b4f6"),
+  buyback: addr(process.env.BUYBACK_WALLET || process.env.CREATOR_WALLET, "0x9d2ee7ea05884ff7aa64992fb45631fe16760aed"),
 };
 const POOL_CREATED = 2, BPS = 10_000n, SLIPPAGE_BPS = 500n, GAS_ROOM = ethers.parseEther("0.0008");
 const MAX_USD = Number(process.env.BURN_MAX_USD || 100), DAY_USD = Number(process.env.BURN_DAY_USD || 300);
