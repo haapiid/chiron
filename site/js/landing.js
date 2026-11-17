@@ -23,7 +23,7 @@ function renderOpen(st) {
   const w = st.wallets; if (!w) return;
   const link = (a) => `<a class="mono" href="${st.explorer}/address/${a}" target="_blank" rel="noopener" title="Open in the explorer">${a}</a><button class="copy" data-copy="${a}">Copy</button>`;
   const rows = [
-    ["Creator wallet", "Launches $CHIRON on Pons. The creator fee from its trades lands here.", link(w.creator)],
+    ["Creator wallet", `${token?.ca ? "Launched" : "Launches"} ${esc(token?.symbol || "CHIRON")} on Pons. The creator fee from its trades lands here.`, link(w.creator)],
     ["$" + esc(token?.symbol || "CHIRON"), token?.ca ? "The token, on its Pons curve." : "Not launched yet. Its address will show here the moment it is set.", token?.ca ? link(token.ca) : `<span class="mono mute">no address yet</span>`],
   ];
   if (token?.ca && token.deadBalance != null) rows.push(["Burned so far", "Tokens sitting at the dead address, gone for good.", `<span class="mono">${Number(token.deadBalance).toLocaleString("en-US", { maximumFractionDigits: 0 })} $${esc(token.symbol)}</span>`]);
