@@ -63,17 +63,28 @@ if curl -fsS "http://127.0.0.1:$PORT/api/state" >/dev/null; then echo "   chiron
 else echo "   chiron does not answer. See: journalctl -u chiron -n 50"; exit 1; fi
 
 echo "== 5/6 nginx site for $DOMAIN"
-sed "s/__DOMAIN__/$DOMAIN/g" "$DIR/deploy/nginx-chiron.conf" > /etc/nginx/sites-available/chiron
-ln -sf /etc/nginx/sites-available/chiron /etc/nginx/sites-enabled/chiron
-if nginx -t 2>/dev/null; then systemctl reload nginx; echo "   nginx reloaded"
-else rm -f /etc/nginx/sites-enabled/chiron; echo "   nginx refused the new site, so it was taken out again. Other sites are untouched. See: nginx -t"; exit 1; fi
+SITE=/etc/nginx/sites-available/chiron
+# A site that already serves this domain over HTTPS is left exactly as it is. Rewriting it on every update would strip
+# the certificate lines until step 6 puts them back, and an update cut off between the two would leave the site without HTTPS.
+if [ -f "$SITE" ] && grep -q "server_name $DOMAIN" "$SITE" && grep -q "listen 443" "$SITE"; then
+  ln -sf "$SITE" /etc/nginx/sites-enabled/chiron
+  HAVE_TLS=1; echo "   kept as it is (already serving $DOMAIN over HTTPS)"
+else
+  HAVE_TLS=0
+  sed "s/__DOMAIN__/$DOMAIN/g" "$DIR/deploy/nginx-chiron.conf" > "$SITE"
+  ln -sf "$SITE" /etc/nginx/sites-enabled/chiron
+  if nginx -t 2>/dev/null; then systemctl reload nginx; echo "   nginx reloaded"
+  else rm -f /etc/nginx/sites-enabled/chiron; echo "   nginx refused the new site, so it was taken out again. Other sites are untouched. See: nginx -t"; exit 1; fi
+fi
 
 echo "== 6/6 HTTPS"
 # with an email a Let's Encrypt account is registered; without one, the account this server already has is used
 if [ -n "$EMAIL" ]; then WHO="--agree-tos -m $EMAIL"
 elif ls /etc/letsencrypt/accounts/*/directory/* >/dev/null 2>&1; then WHO=""
 else WHO="none"; fi
-if [ "$WHO" = "none" ]; then
+if [ "$HAVE_TLS" = 1 ]; then
+  echo "   kept (the certificate renews by itself)"
+elif [ "$WHO" = "none" ]; then
   echo "   skipped: no email given and this server has no Let's Encrypt account yet. Run: certbot --nginx -d $DOMAIN --redirect"
 else
   command -v certbot >/dev/null 2>&1 || apt-get install -y -qq certbot python3-certbot-nginx >/dev/null
